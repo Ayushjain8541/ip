@@ -5,7 +5,8 @@ import java.util.Scanner;
  */
 public class Goop {
     /**
-     * Greets the user, echoes commands, and exits when the user enters {@code bye}.
+     * Greets the user, stores tasks in memory, lists them on request, and exits when
+     * the user enters {@code bye}.
      *
      * @param args command-line arguments, which are not used
      */
@@ -25,6 +26,9 @@ public class Goop {
         System.out.println(divider);
 
         Scanner scanner = new Scanner(System.in);
+        String[] tasks = new String[100];
+        int taskCount = 0;
+
         while (scanner.hasNextLine()) {
             String command = scanner.nextLine();
             System.out.println(divider);
@@ -35,7 +39,17 @@ public class Goop {
                 break;
             }
 
-            System.out.println(" " + command);
+            if (command.equals("list")) {
+                for (int i = 0; i < taskCount; i++) {
+                    System.out.println(" " + (i + 1) + ". " + tasks[i]);
+                }
+                System.out.println(divider);
+                continue;
+            }
+
+            tasks[taskCount] = command;
+            taskCount++;
+            System.out.println(" added: " + command);
             System.out.println(divider);
         }
     }
