@@ -5,8 +5,8 @@ import java.util.Scanner;
  */
 public class Goop {
     /**
-     * Greets the user, stores tasks and their completion status in memory, lists
-     * them on request, and exits when the user enters {@code bye}.
+     * Greets the user, stores tasks and their completion status in memory, updates
+     * their status on request, and exits when the user enters {@code bye}.
      *
      * @param args command-line arguments, which are not used
      */
@@ -46,6 +46,15 @@ public class Goop {
                     String statusIcon = isDone[i] ? "X" : " ";
                     System.out.println(" " + (i + 1) + ".[" + statusIcon + "] " + tasks[i]);
                 }
+                System.out.println(divider);
+                continue;
+            }
+
+            if (command.startsWith("unmark ")) {
+                int taskIndex = Integer.parseInt(command.substring(7)) - 1;
+                isDone[taskIndex] = false;
+                System.out.println(" OK, I've marked this task as not done yet:");
+                System.out.println("   [ ] " + tasks[taskIndex]);
                 System.out.println(divider);
                 continue;
             }
