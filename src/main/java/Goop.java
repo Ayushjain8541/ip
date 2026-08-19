@@ -5,8 +5,8 @@ import java.util.Scanner;
  */
 public class Goop {
     /**
-     * Greets the user, stores tasks in memory, lists them on request, and exits when
-     * the user enters {@code bye}.
+     * Greets the user, stores tasks and their completion status in memory, lists
+     * them on request, and exits when the user enters {@code bye}.
      *
      * @param args command-line arguments, which are not used
      */
@@ -27,6 +27,7 @@ public class Goop {
 
         Scanner scanner = new Scanner(System.in);
         String[] tasks = new String[100];
+        boolean[] isDone = new boolean[100];
         int taskCount = 0;
 
         while (scanner.hasNextLine()) {
@@ -40,9 +41,20 @@ public class Goop {
             }
 
             if (command.equals("list")) {
+                System.out.println(" Here are the tasks in your list:");
                 for (int i = 0; i < taskCount; i++) {
-                    System.out.println(" " + (i + 1) + ". " + tasks[i]);
+                    String statusIcon = isDone[i] ? "X" : " ";
+                    System.out.println(" " + (i + 1) + ".[" + statusIcon + "] " + tasks[i]);
                 }
+                System.out.println(divider);
+                continue;
+            }
+
+            if (command.startsWith("mark ")) {
+                int taskIndex = Integer.parseInt(command.substring(5)) - 1;
+                isDone[taskIndex] = true;
+                System.out.println(" Nice! I've marked this task as done:");
+                System.out.println("   [X] " + tasks[taskIndex]);
                 System.out.println(divider);
                 continue;
             }
