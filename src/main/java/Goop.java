@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -5,8 +7,8 @@ import java.util.Scanner;
  */
 public class Goop {
     /**
-     * Greets the user, stores tasks in memory, updates their status on request, and
-     * exits when the user enters {@code bye}.
+     * Greets the user, stores tasks in memory, updates or deletes them on request,
+     * and exits when the user enters {@code bye}.
      *
      * @param args command-line arguments, which are not used
      */
@@ -26,8 +28,7 @@ public class Goop {
         System.out.println(divider);
 
         Scanner scanner = new Scanner(System.in);
-        Task[] tasks = new Task[100];
-        int taskCount = 0;
+        List<Task> tasks = new ArrayList<>();
 
         while (scanner.hasNextLine()) {
             String command = scanner.nextLine().trim();
@@ -47,42 +48,46 @@ public class Goop {
 
                 if (command.equals("list")) {
                     System.out.println(" Here are the tasks in your list:");
-                    for (int i = 0; i < taskCount; i++) {
-                        System.out.println(" " + (i + 1) + "." + tasks[i]);
+                    for (int i = 0; i < tasks.size(); i++) {
+                        System.out.println(" " + (i + 1) + "." + tasks.get(i));
                     }
                     System.out.println(divider);
                     continue;
                 }
 
+                if (isCommand(command, "delete")) {
+                    int taskIndex = parseTaskIndex(command, "delete", tasks.size());
+                    Task deletedTask = tasks.remove(taskIndex);
+                    System.out.println(" Noted. I've removed this task:");
+                    System.out.println("   " + deletedTask);
+                    System.out.println(" Now you have " + tasks.size() + " tasks in the list.");
+                    System.out.println(divider);
+                    continue;
+                }
+
                 if (isCommand(command, "unmark")) {
-                    int taskIndex = parseTaskIndex(command, "unmark", taskCount);
-                    tasks[taskIndex].markAsNotDone();
+                    int taskIndex = parseTaskIndex(command, "unmark", tasks.size());
+                    tasks.get(taskIndex).markAsNotDone();
                     System.out.println(" OK, I've marked this task as not done yet:");
-                    System.out.println("   " + tasks[taskIndex]);
+                    System.out.println("   " + tasks.get(taskIndex));
                     System.out.println(divider);
                     continue;
                 }
 
                 if (isCommand(command, "mark")) {
-                    int taskIndex = parseTaskIndex(command, "mark", taskCount);
-                    tasks[taskIndex].markAsDone();
+                    int taskIndex = parseTaskIndex(command, "mark", tasks.size());
+                    tasks.get(taskIndex).markAsDone();
                     System.out.println(" Nice! I've marked this task as done:");
-                    System.out.println("   " + tasks[taskIndex]);
+                    System.out.println("   " + tasks.get(taskIndex));
                     System.out.println(divider);
                     continue;
                 }
 
                 Task newTask = parseTask(command);
-                if (taskCount == tasks.length) {
-                    throw new GoopException("The task list already has 100 tasks. "
-                            + "Restart Goop to begin a new list before adding another task.");
-                }
-
-                tasks[taskCount] = newTask;
-                taskCount++;
+                tasks.add(newTask);
                 System.out.println(" Got it. I've added this task:");
                 System.out.println("   " + newTask);
-                System.out.println(" Now you have " + taskCount + " tasks in the list.");
+                System.out.println(" Now you have " + tasks.size() + " tasks in the list.");
                 System.out.println(divider);
             } catch (GoopException error) {
                 System.out.println(" ERROR: " + error.getMessage());
@@ -104,11 +109,11 @@ public class Goop {
     }
 
     /**
-     * Parses and validates the task number supplied to {@code mark} or
-     * {@code unmark}.
+     * Parses and validates the task number supplied to {@code mark},
+     * {@code unmark}, or {@code delete}.
      *
      * @param input complete user input
-     * @param commandWord either {@code mark} or {@code unmark}
+     * @param commandWord {@code mark}, {@code unmark}, or {@code delete}
      * @param taskCount number of tasks currently stored
      * @return zero-based index of the selected task
      * @throws GoopException if the task number is missing, malformed, or outside
@@ -174,7 +179,7 @@ public class Goop {
         }
 
         throw new GoopException("I don't recognise that command. Use todo, deadline, "
-                + "event, list, mark, unmark, or bye.");
+                + "event, list, mark, unmark, delete, or bye.");
     }
 
     /**

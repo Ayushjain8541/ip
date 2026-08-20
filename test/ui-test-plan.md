@@ -245,7 +245,7 @@ ____________________________________________________________
  ERROR: A todo needs a description. Use: todo <description>.
 ____________________________________________________________
 ____________________________________________________________
- ERROR: I don't recognise that command. Use todo, deadline, event, list, mark, unmark, or bye.
+ ERROR: I don't recognise that command. Use todo, deadline, event, list, mark, unmark, delete, or bye.
 ____________________________________________________________
 ____________________________________________________________
  ERROR: Please enter a command. For example: todo read book.
@@ -255,7 +255,125 @@ ____________________________________________________________
 ____________________________________________________________
 ```
 
-## TC-007: Reject malformed deadline and event details
+## TC-007: Delete a task and renumber the list
+
+- Aim: Verify that delete removes the selected task and closes the numbering gap for the remaining tasks.
+
+### Inputs
+
+```text
+todo read book
+deadline return book /by June 6th
+event project meeting /from Aug 6th 2pm /to 4pm
+delete 2
+list
+bye
+```
+
+### Expected output
+
+```text
+____________________________________________________________
+  ____
+ / ___| ___   ___  _ __
+| |  _ / _ \ / _ \| '_ \
+| |_| | (_) | (_) | |_) |
+ \____|\___/ \___/| .__/
+                  |_|
+ Hello! I'm Goop.
+ What can I do for you?
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] read book
+ Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [D][ ] return book (by: June 6th)
+ Now you have 2 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+ Now you have 3 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Noted. I've removed this task:
+   [D][ ] return book (by: June 6th)
+ Now you have 2 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Here are the tasks in your list:
+ 1.[T][ ] read book
+ 2.[E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+## TC-008: Reject invalid delete commands
+
+- Aim: Verify that delete rejects missing, malformed, empty-list, and out-of-range task numbers while allowing recovery.
+
+### Inputs
+
+```text
+delete
+delete two
+delete 1
+todo read book
+delete 2
+delete 1
+delete 1
+bye
+```
+
+### Expected output
+
+```text
+____________________________________________________________
+  ____
+ / ___| ___   ___  _ __
+| |  _ / _ \ / _ \| '_ \
+| |_| | (_) | (_) | |_) |
+ \____|\___/ \___/| .__/
+                  |_|
+ Hello! I'm Goop.
+ What can I do for you?
+____________________________________________________________
+____________________________________________________________
+ ERROR: The delete command needs one task number. Use: delete <number>.
+____________________________________________________________
+____________________________________________________________
+ ERROR: The delete command accepts one positive whole number. Use: delete 1.
+____________________________________________________________
+____________________________________________________________
+ ERROR: There are no tasks to delete. Add a task first.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] read book
+ Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ ERROR: Task 2 is outside the list. Run list and choose a number from 1 to 1.
+____________________________________________________________
+____________________________________________________________
+ Noted. I've removed this task:
+   [T][ ] read book
+ Now you have 0 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ ERROR: There are no tasks to delete. Add a task first.
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+## TC-009: Reject malformed deadline and event details
 
 - Aim: Verify that every required deadline and event component produces specific correction guidance when missing.
 
@@ -327,7 +445,7 @@ ____________________________________________________________
 ____________________________________________________________
 ```
 
-## TC-008: Reject invalid task numbers
+## TC-010: Reject invalid task numbers
 
 - Aim: Verify that mark and unmark reject missing, malformed, oversized, and out-of-range task numbers without ending the session.
 
