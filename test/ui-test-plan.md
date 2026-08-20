@@ -214,3 +214,177 @@ ____________________________________________________________
  Bye. Hope to see you again soon!
 ____________________________________________________________
 ```
+
+## TC-006: Reject incomplete and unknown commands
+
+- Aim: Verify that empty task descriptions, unknown commands, and blank input produce actionable errors without ending the session.
+
+### Inputs
+
+```text
+todo
+blah
+
+bye
+```
+
+### Expected output
+
+```text
+____________________________________________________________
+  ____
+ / ___| ___   ___  _ __
+| |  _ / _ \ / _ \| '_ \
+| |_| | (_) | (_) | |_) |
+ \____|\___/ \___/| .__/
+                  |_|
+ Hello! I'm Goop.
+ What can I do for you?
+____________________________________________________________
+____________________________________________________________
+ ERROR: A todo needs a description. Use: todo <description>.
+____________________________________________________________
+____________________________________________________________
+ ERROR: I don't recognise that command. Use todo, deadline, event, list, mark, unmark, or bye.
+____________________________________________________________
+____________________________________________________________
+ ERROR: Please enter a command. For example: todo read book.
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+## TC-007: Reject malformed deadline and event details
+
+- Aim: Verify that every required deadline and event component produces specific correction guidance when missing.
+
+### Inputs
+
+```text
+deadline submit report
+deadline /by Sunday
+deadline submit report /by
+deadline submit report /byte Sunday
+event meeting
+event /from Mon /to Tue
+event meeting /from /to Tue
+event meeting /from Mon
+event meeting /from Mon /to
+event meeting /fromage Mon /to Tue
+event meeting /from Mon /today Tue
+bye
+```
+
+### Expected output
+
+```text
+____________________________________________________________
+  ____
+ / ___| ___   ___  _ __
+| |  _ / _ \ / _ \| '_ \
+| |_| | (_) | (_) | |_) |
+ \____|\___/ \___/| .__/
+                  |_|
+ Hello! I'm Goop.
+ What can I do for you?
+____________________________________________________________
+____________________________________________________________
+ ERROR: A deadline needs '/by' between its description and date. Use: deadline <description> /by <date or time>.
+____________________________________________________________
+____________________________________________________________
+ ERROR: A deadline needs a description before '/by'. Use: deadline <description> /by <date or time>.
+____________________________________________________________
+____________________________________________________________
+ ERROR: A deadline needs a date or time after '/by'. Use: deadline <description> /by <date or time>.
+____________________________________________________________
+____________________________________________________________
+ ERROR: A deadline needs '/by' between its description and date. Use: deadline <description> /by <date or time>.
+____________________________________________________________
+____________________________________________________________
+ ERROR: An event needs '/from' before its start time. Use: event <description> /from <start> /to <end>.
+____________________________________________________________
+____________________________________________________________
+ ERROR: An event needs a description before '/from'. Use: event <description> /from <start> /to <end>.
+____________________________________________________________
+____________________________________________________________
+ ERROR: An event needs a start time after '/from'. Use: event <description> /from <start> /to <end>.
+____________________________________________________________
+____________________________________________________________
+ ERROR: An event needs '/to' before its end time. Use: event <description> /from <start> /to <end>.
+____________________________________________________________
+____________________________________________________________
+ ERROR: An event needs an end time after '/to'. Use: event <description> /from <start> /to <end>.
+____________________________________________________________
+____________________________________________________________
+ ERROR: An event needs '/from' before its start time. Use: event <description> /from <start> /to <end>.
+____________________________________________________________
+____________________________________________________________
+ ERROR: An event needs '/to' before its end time. Use: event <description> /from <start> /to <end>.
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+## TC-008: Reject invalid task numbers
+
+- Aim: Verify that mark and unmark reject missing, malformed, oversized, and out-of-range task numbers without ending the session.
+
+### Inputs
+
+```text
+mark
+mark two
+mark 999999999999999999999
+mark 1
+todo read book
+mark 2
+unmark 0
+unmark 1 extra
+bye
+```
+
+### Expected output
+
+```text
+____________________________________________________________
+  ____
+ / ___| ___   ___  _ __
+| |  _ / _ \ / _ \| '_ \
+| |_| | (_) | (_) | |_) |
+ \____|\___/ \___/| .__/
+                  |_|
+ Hello! I'm Goop.
+ What can I do for you?
+____________________________________________________________
+____________________________________________________________
+ ERROR: The mark command needs one task number. Use: mark <number>.
+____________________________________________________________
+____________________________________________________________
+ ERROR: The mark command accepts one positive whole number. Use: mark 1.
+____________________________________________________________
+____________________________________________________________
+ ERROR: That task number is too large. Run list and choose a displayed number.
+____________________________________________________________
+____________________________________________________________
+ ERROR: There are no tasks to mark. Add a task first.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] read book
+ Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ ERROR: Task 2 is outside the list. Run list and choose a number from 1 to 1.
+____________________________________________________________
+____________________________________________________________
+ ERROR: The unmark command accepts one positive whole number. Use: unmark 1.
+____________________________________________________________
+____________________________________________________________
+ ERROR: The unmark command accepts one positive whole number. Use: unmark 1.
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```

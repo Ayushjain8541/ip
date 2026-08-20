@@ -30,63 +30,242 @@ public class Goop {
         int taskCount = 0;
 
         while (scanner.hasNextLine()) {
-            String command = scanner.nextLine();
+            String command = scanner.nextLine().trim();
             System.out.println(divider);
 
-            if (command.equals("bye")) {
-                System.out.println(" Bye. Hope to see you again soon!");
-                System.out.println(divider);
-                break;
-            }
-
-            if (command.equals("list")) {
-                System.out.println(" Here are the tasks in your list:");
-                for (int i = 0; i < taskCount; i++) {
-                    System.out.println(" " + (i + 1) + "." + tasks[i]);
+            try {
+                if (command.isEmpty()) {
+                    throw new GoopException(
+                            "Please enter a command. For example: todo read book.");
                 }
+
+                if (command.equals("bye")) {
+                    System.out.println(" Bye. Hope to see you again soon!");
+                    System.out.println(divider);
+                    break;
+                }
+
+                if (command.equals("list")) {
+                    System.out.println(" Here are the tasks in your list:");
+                    for (int i = 0; i < taskCount; i++) {
+                        System.out.println(" " + (i + 1) + "." + tasks[i]);
+                    }
+                    System.out.println(divider);
+                    continue;
+                }
+
+                if (isCommand(command, "unmark")) {
+                    int taskIndex = parseTaskIndex(command, "unmark", taskCount);
+                    tasks[taskIndex].markAsNotDone();
+                    System.out.println(" OK, I've marked this task as not done yet:");
+                    System.out.println("   " + tasks[taskIndex]);
+                    System.out.println(divider);
+                    continue;
+                }
+
+                if (isCommand(command, "mark")) {
+                    int taskIndex = parseTaskIndex(command, "mark", taskCount);
+                    tasks[taskIndex].markAsDone();
+                    System.out.println(" Nice! I've marked this task as done:");
+                    System.out.println("   " + tasks[taskIndex]);
+                    System.out.println(divider);
+                    continue;
+                }
+
+                Task newTask = parseTask(command);
+                if (taskCount == tasks.length) {
+                    throw new GoopException("The task list already has 100 tasks. "
+                            + "Restart Goop to begin a new list before adding another task.");
+                }
+
+                tasks[taskCount] = newTask;
+                taskCount++;
+                System.out.println(" Got it. I've added this task:");
+                System.out.println("   " + newTask);
+                System.out.println(" Now you have " + taskCount + " tasks in the list.");
                 System.out.println(divider);
-                continue;
-            }
-
-            if (command.startsWith("unmark ")) {
-                int taskIndex = Integer.parseInt(command.substring(7)) - 1;
-                tasks[taskIndex].markAsNotDone();
-                System.out.println(" OK, I've marked this task as not done yet:");
-                System.out.println("   " + tasks[taskIndex]);
+            } catch (GoopException error) {
+                System.out.println(" ERROR: " + error.getMessage());
                 System.out.println(divider);
-                continue;
             }
-
-            if (command.startsWith("mark ")) {
-                int taskIndex = Integer.parseInt(command.substring(5)) - 1;
-                tasks[taskIndex].markAsDone();
-                System.out.println(" Nice! I've marked this task as done:");
-                System.out.println("   " + tasks[taskIndex]);
-                System.out.println(divider);
-                continue;
-            }
-
-            Task newTask;
-            if (command.startsWith("todo ")) {
-                String description = command.substring(5);
-                newTask = new Todo(description);
-            } else if (command.startsWith("deadline ")) {
-                String[] taskDetails = command.substring(9).split(" /by ", 2);
-                newTask = new Deadline(taskDetails[0], taskDetails[1]);
-            } else if (command.startsWith("event ")) {
-                String[] taskDetails = command.substring(6).split(" /from ", 2);
-                String[] eventTimes = taskDetails[1].split(" /to ", 2);
-                newTask = new Event(taskDetails[0], eventTimes[0], eventTimes[1]);
-            } else {
-                newTask = new Todo(command);
-            }
-
-            tasks[taskCount] = newTask;
-            taskCount++;
-            System.out.println(" Got it. I've added this task:");
-            System.out.println("   " + newTask);
-            System.out.println(" Now you have " + taskCount + " tasks in the list.");
-            System.out.println(divider);
         }
+    }
+
+    /**
+     * Checks whether an input contains the given command word, optionally followed
+     * by arguments.
+     *
+     * @param input complete user input
+     * @param commandWord command word to match
+     * @return true when the input contains the command
+     */
+    private static boolean isCommand(String input, String commandWord) {
+        return input.equals(commandWord) || input.startsWith(commandWord + " ");
+    }
+
+    /**
+     * Parses and validates the task number supplied to {@code mark} or
+     * {@code unmark}.
+     *
+     * @param input complete user input
+     * @param commandWord either {@code mark} or {@code unmark}
+     * @param taskCount number of tasks currently stored
+     * @return zero-based index of the selected task
+     * @throws GoopException if the task number is missing, malformed, or outside
+     *         the current list
+     */
+    private static int parseTaskIndex(String input, String commandWord, int taskCount)
+            throws GoopException {
+        String argument = input.substring(commandWord.length()).trim();
+        if (argument.isEmpty()) {
+            throw new GoopException("The " + commandWord
+                    + " command needs one task number. Use: " + commandWord + " <number>.");
+        }
+        if (!argument.matches("[1-9][0-9]*")) {
+            throw new GoopException("The " + commandWord
+                    + " command accepts one positive whole number. Use: "
+                    + commandWord + " 1.");
+        }
+
+        int taskNumber;
+        try {
+            taskNumber = Integer.parseInt(argument);
+        } catch (NumberFormatException error) {
+            throw new GoopException(
+                    "That task number is too large. Run list and choose a displayed number.");
+        }
+
+        if (taskCount == 0) {
+            throw new GoopException("There are no tasks to " + commandWord
+                    + ". Add a task first.");
+        }
+        if (taskNumber > taskCount) {
+            throw new GoopException("Task " + taskNumber
+                    + " is outside the list. Run list and choose a number from 1 to "
+                    + taskCount + ".");
+        }
+        return taskNumber - 1;
+    }
+
+    /**
+     * Creates a task from a valid add command.
+     *
+     * @param input complete user input
+     * @return task described by the input
+     * @throws GoopException if the command is unknown or required task details are
+     *         missing
+     */
+    private static Task parseTask(String input) throws GoopException {
+        if (isCommand(input, "todo")) {
+            String description = input.substring("todo".length()).trim();
+            if (description.isEmpty()) {
+                throw new GoopException(
+                        "A todo needs a description. Use: todo <description>.");
+            }
+            return new Todo(description);
+        }
+
+        if (isCommand(input, "deadline")) {
+            return parseDeadline(input.substring("deadline".length()).trim());
+        }
+
+        if (isCommand(input, "event")) {
+            return parseEvent(input.substring("event".length()).trim());
+        }
+
+        throw new GoopException("I don't recognise that command. Use todo, deadline, "
+                + "event, list, mark, unmark, or bye.");
+    }
+
+    /**
+     * Creates a deadline after validating its description and deadline text.
+     *
+     * @param taskDetails text following the {@code deadline} command
+     * @return parsed deadline
+     * @throws GoopException if the description, delimiter, or deadline is missing
+     */
+    private static Deadline parseDeadline(String taskDetails) throws GoopException {
+        int byPosition = findDelimiter(taskDetails, "/by");
+        if (byPosition < 0) {
+            throw new GoopException("A deadline needs '/by' between its description "
+                    + "and date. Use: deadline <description> /by <date or time>.");
+        }
+
+        String description = taskDetails.substring(0, byPosition).trim();
+        String by = taskDetails.substring(byPosition + "/by".length()).trim();
+        if (description.isEmpty()) {
+            throw new GoopException("A deadline needs a description before '/by'. "
+                    + "Use: deadline <description> /by <date or time>.");
+        }
+        if (by.isEmpty()) {
+            throw new GoopException("A deadline needs a date or time after '/by'. "
+                    + "Use: deadline <description> /by <date or time>.");
+        }
+        return new Deadline(description, by);
+    }
+
+    /**
+     * Creates an event after validating its description, start, and end text.
+     *
+     * @param taskDetails text following the {@code event} command
+     * @return parsed event
+     * @throws GoopException if the description, delimiters, start, or end is
+     *         missing
+     */
+    private static Event parseEvent(String taskDetails) throws GoopException {
+        int fromPosition = findDelimiter(taskDetails, "/from");
+        if (fromPosition < 0) {
+            throw new GoopException("An event needs '/from' before its start time. "
+                    + "Use: event <description> /from <start> /to <end>.");
+        }
+
+        String description = taskDetails.substring(0, fromPosition).trim();
+        String eventTimes = taskDetails.substring(fromPosition + "/from".length()).trim();
+        if (description.isEmpty()) {
+            throw new GoopException("An event needs a description before '/from'. "
+                    + "Use: event <description> /from <start> /to <end>.");
+        }
+
+        int toPosition = findDelimiter(eventTimes, "/to");
+        if (toPosition < 0) {
+            throw new GoopException("An event needs '/to' before its end time. "
+                    + "Use: event <description> /from <start> /to <end>.");
+        }
+
+        String from = eventTimes.substring(0, toPosition).trim();
+        String to = eventTimes.substring(toPosition + "/to".length()).trim();
+        if (from.isEmpty()) {
+            throw new GoopException("An event needs a start time after '/from'. "
+                    + "Use: event <description> /from <start> /to <end>.");
+        }
+        if (to.isEmpty()) {
+            throw new GoopException("An event needs an end time after '/to'. "
+                    + "Use: event <description> /from <start> /to <end>.");
+        }
+        return new Event(description, from, to);
+    }
+
+    /**
+     * Finds a delimiter only when it appears as a separate whitespace-delimited
+     * token.
+     *
+     * @param text text to search
+     * @param delimiter delimiter token, such as {@code /by}
+     * @return starting index of the delimiter, or {@code -1} when it is absent
+     */
+    private static int findDelimiter(String text, String delimiter) {
+        int position = text.indexOf(delimiter);
+        while (position >= 0) {
+            int afterDelimiter = position + delimiter.length();
+            boolean hasValidStart = position == 0
+                    || Character.isWhitespace(text.charAt(position - 1));
+            boolean hasValidEnd = afterDelimiter == text.length()
+                    || Character.isWhitespace(text.charAt(afterDelimiter));
+            if (hasValidStart && hasValidEnd) {
+                return position;
+            }
+            position = text.indexOf(delimiter, position + 1);
+        }
+        return -1;
     }
 }
