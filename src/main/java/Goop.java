@@ -66,9 +66,26 @@ public class Goop {
                 continue;
             }
 
-            tasks[taskCount] = new Task(command);
+            Task newTask;
+            if (command.startsWith("todo ")) {
+                String description = command.substring(5);
+                newTask = new Todo(description);
+            } else if (command.startsWith("deadline ")) {
+                String[] taskDetails = command.substring(9).split(" /by ", 2);
+                newTask = new Deadline(taskDetails[0], taskDetails[1]);
+            } else if (command.startsWith("event ")) {
+                String[] taskDetails = command.substring(6).split(" /from ", 2);
+                String[] eventTimes = taskDetails[1].split(" /to ", 2);
+                newTask = new Event(taskDetails[0], eventTimes[0], eventTimes[1]);
+            } else {
+                newTask = new Todo(command);
+            }
+
+            tasks[taskCount] = newTask;
             taskCount++;
-            System.out.println(" added: " + command);
+            System.out.println(" Got it. I've added this task:");
+            System.out.println("   " + newTask);
+            System.out.println(" Now you have " + taskCount + " tasks in the list.");
             System.out.println(divider);
         }
     }
