@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -38,10 +37,10 @@ public class Goop {
 
         Scanner scanner = new Scanner(System.in);
         Storage storage = new Storage(DATA_FILE_PATH);
-        List<Task> tasks = new ArrayList<>();
+        TaskList tasks = new TaskList();
         String loadWarning = null;
         try {
-            tasks = storage.loadTasks();
+            tasks = new TaskList(storage.loadTasks());
         } catch (IOException error) {
             loadWarning = error.getMessage();
         }
@@ -84,9 +83,9 @@ public class Goop {
 
                 if (isCommand(command, "delete")) {
                     int taskIndex = parseTaskIndex(command, "delete", tasks.size());
-                    Task deletedTask = tasks.remove(taskIndex);
+                    Task deletedTask = tasks.delete(taskIndex);
                     try {
-                        storage.saveTasks(tasks);
+                        storage.saveTasks(tasks.getTasks());
                     } catch (IOException error) {
                         tasks.add(taskIndex, deletedTask);
                         throw error;
@@ -101,11 +100,11 @@ public class Goop {
                 if (isCommand(command, "unmark")) {
                     int taskIndex = parseTaskIndex(command, "unmark", tasks.size());
                     boolean wasDone = tasks.get(taskIndex).isDone();
-                    tasks.get(taskIndex).markAsNotDone();
+                    tasks.setDone(taskIndex, false);
                     try {
-                        storage.saveTasks(tasks);
+                        storage.saveTasks(tasks.getTasks());
                     } catch (IOException error) {
-                        restoreStatus(tasks.get(taskIndex), wasDone);
+                        tasks.setDone(taskIndex, wasDone);
                         throw error;
                     }
                     System.out.println(" OK, I've marked this task as not done yet:");
@@ -117,11 +116,11 @@ public class Goop {
                 if (isCommand(command, "mark")) {
                     int taskIndex = parseTaskIndex(command, "mark", tasks.size());
                     boolean wasDone = tasks.get(taskIndex).isDone();
-                    tasks.get(taskIndex).markAsDone();
+                    tasks.setDone(taskIndex, true);
                     try {
-                        storage.saveTasks(tasks);
+                        storage.saveTasks(tasks.getTasks());
                     } catch (IOException error) {
-                        restoreStatus(tasks.get(taskIndex), wasDone);
+                        tasks.setDone(taskIndex, wasDone);
                         throw error;
                     }
                     System.out.println(" Nice! I've marked this task as done:");
@@ -133,9 +132,9 @@ public class Goop {
                 Task newTask = parseTask(command);
                 tasks.add(newTask);
                 try {
-                    storage.saveTasks(tasks);
+                    storage.saveTasks(tasks.getTasks());
                 } catch (IOException error) {
-                    tasks.remove(tasks.size() - 1);
+                    tasks.delete(tasks.size() - 1);
                     throw error;
                 }
                 System.out.println(" Got it. I've added this task:");
@@ -150,20 +149,6 @@ public class Goop {
                         + " No changes were made.");
                 System.out.println(divider);
             }
-        }
-    }
-
-    /**
-     * Restores a task's completion state after an unsuccessful save.
-     *
-     * @param task task whose state should be restored
-     * @param isDone completion state to restore
-     */
-    private static void restoreStatus(Task task, boolean isDone) {
-        if (isDone) {
-            task.markAsDone();
-        } else {
-            task.markAsNotDone();
         }
     }
 
