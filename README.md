@@ -30,3 +30,37 @@ Prerequisites: JDK 25, update Intellij to the most recent version.
    ```
 
 **Warning:** Keep the `src\main\java` folder as the root folder for Java files (i.e., don't rename those folders or move Java files to another folder outside of this folder path), as this is the default location some tools (e.g., Gradle) expect to find Java files.
+
+## Creating and running the fat JAR
+
+The Shadow plugin packages Goop and its runtime dependencies into one executable
+fat JAR. Use Java 25 when building and running it.
+
+From the project root, create the JAR with:
+
+```shell
+./gradlew clean shadowJar
+```
+
+On Windows, use:
+
+```shell
+gradlew.bat clean shadowJar
+```
+
+The generated file is located at `build/libs/duke.jar`. Run it from the project
+root with:
+
+```shell
+java -jar build/libs/duke.jar
+```
+
+On Windows, the equivalent command is:
+
+```shell
+java -jar build\libs\duke.jar
+```
+
+The application stores its task data relative to the directory from which the
+JAR is run. The generated `build` directory is ignored by Git, so the JAR should
+not be committed.
