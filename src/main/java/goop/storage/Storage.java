@@ -1,3 +1,5 @@
+package goop.storage;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -7,6 +9,12 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+
+import goop.task.Deadline;
+import goop.task.Event;
+import goop.task.Task;
+import goop.task.TaskList;
+import goop.task.Todo;
 
 /**
  * Loads tasks from and saves tasks to a text file on the local hard disk.

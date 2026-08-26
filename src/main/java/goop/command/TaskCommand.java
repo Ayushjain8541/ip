@@ -1,3 +1,8 @@
+package goop.command;
+
+import goop.exception.GoopException;
+import goop.task.TaskList;
+
 /**
  * Provides task-number validation shared by commands that target one task.
  */

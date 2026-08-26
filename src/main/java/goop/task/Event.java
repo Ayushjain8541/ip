@@ -1,3 +1,5 @@
+package goop.task;
+
 /**
  * Represents a task that takes place between a start and end date or time.
  */

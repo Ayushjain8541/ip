@@ -1,3 +1,9 @@
+package goop.command;
+
+import goop.storage.Storage;
+import goop.task.TaskList;
+import goop.ui.Ui;
+
 /**
  * Represents a request to exit the application.
  */

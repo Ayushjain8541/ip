@@ -80,7 +80,7 @@ public class StorageTest {
         Path classPath = Path.of("out", "production", "ip").toAbsolutePath();
         Path javaExecutable = Path.of(System.getProperty("java.home"), "bin", "java");
         Process process = new ProcessBuilder(
-                javaExecutable.toString(), "-cp", classPath.toString(), "Goop")
+                javaExecutable.toString(), "-cp", classPath.toString(), "goop.Goop")
                 .directory(workingDirectory.toFile())
                 .redirectErrorStream(true)
                 .start();

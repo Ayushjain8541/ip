@@ -1,4 +1,9 @@
+package goop.ui;
+
 import java.util.Scanner;
+
+import goop.task.Task;
+import goop.task.TaskList;
 
 /**
  * Handles all console input and output for the chatbot.

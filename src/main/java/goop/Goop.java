@@ -1,5 +1,14 @@
+package goop;
+
 import java.io.IOException;
 import java.nio.file.Path;
+
+import goop.command.Command;
+import goop.exception.GoopException;
+import goop.parser.Parser;
+import goop.storage.Storage;
+import goop.task.TaskList;
+import goop.ui.Ui;
 
 /**
  * Coordinates the components of the Goop chatbot application.

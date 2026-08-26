@@ -1,4 +1,12 @@
+package goop.command;
+
 import java.io.IOException;
+
+import goop.exception.GoopException;
+import goop.storage.Storage;
+import goop.task.Task;
+import goop.task.TaskList;
+import goop.ui.Ui;
 
 /**
  * Represents a request to delete one task.
