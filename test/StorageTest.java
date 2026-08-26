@@ -25,7 +25,7 @@ public class StorageTest {
             check(Files.notExists(dataFile), "The test must begin without a data file.");
             runGoop(temporaryDirectory,
                     "todo read | book \\ notes\n"
-                            + "deadline return book /by June 6th\n"
+                            + "deadline return book /by 6/6/2019 1800\n"
                             + "event project meeting /from Aug 6th 2pm /to 4pm\n"
                             + "mark 1\n"
                             + "bye\n");
@@ -35,15 +35,16 @@ public class StorageTest {
             List<String> savedLines = Files.readAllLines(dataFile, StandardCharsets.UTF_8);
             check(savedLines.equals(List.of(
                     "T | 1 | read \\| book \\\\ notes",
-                    "D | 0 | return book | June 6th",
+                    "D | 0 | return book | 2019-06-06T18:00:00",
                     "E | 0 | project meeting | Aug 6th 2pm | 4pm")),
                     "The data file should contain every task and completion status.");
 
             String reloadedOutput = runGoop(temporaryDirectory, "list\nbye\n");
             check(reloadedOutput.contains(" 1.[T][X] read | book \\ notes\n"),
                     "A completed todo should reload with escaped text intact.");
-            check(reloadedOutput.contains(" 2.[D][ ] return book (by: June 6th)\n"),
-                    "A deadline should reload with its deadline text.");
+            check(reloadedOutput.contains(
+                    " 2.[D][ ] return book (by: Jun 6 2019, 6:00 PM)\n"),
+                    "A deadline should reload with its parsed date and time.");
             check(reloadedOutput.contains(
                     " 3.[E][ ] project meeting (from: Aug 6th 2pm to: 4pm)\n"),
                     "An event should reload with its start and end text.");
