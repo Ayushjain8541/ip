@@ -16,12 +16,38 @@ public class Parser {
                     .withResolverStyle(ResolverStyle.STRICT));
 
     /**
-     * Ensures that the user entered a command rather than a blank line.
+     * Converts complete user input into a typed, validated command.
      *
      * @param input complete user input
-     * @throws GoopException if the input is blank
+     * @param taskCount number of tasks currently stored
+     * @return command represented by the input
+     * @throws GoopException if the command or its arguments are invalid
      */
-    public void validateCommand(String input) throws GoopException {
+    public Command parse(String input, int taskCount) throws GoopException {
+        validateCommand(input);
+
+        if (input.equals("bye")) {
+            return new ExitCommand();
+        }
+        if (input.equals("list")) {
+            return new ListCommand();
+        }
+        if (isCommand(input, "delete")) {
+            return new DeleteCommand(parseTaskIndex(input, "delete", taskCount));
+        }
+        if (isCommand(input, "unmark")) {
+            return new UnmarkCommand(parseTaskIndex(input, "unmark", taskCount));
+        }
+        if (isCommand(input, "mark")) {
+            return new MarkCommand(parseTaskIndex(input, "mark", taskCount));
+        }
+        return new AddCommand(parseTask(input));
+    }
+
+    /**
+     * Ensures that the user entered a command rather than a blank line.
+     */
+    private void validateCommand(String input) throws GoopException {
         if (input.isEmpty()) {
             throw new GoopException(
                     "Please enter a command. For example: todo read book.");
@@ -36,7 +62,7 @@ public class Parser {
      * @param commandWord command word to match
      * @return true when the input contains the command
      */
-    public boolean isCommand(String input, String commandWord) {
+    private boolean isCommand(String input, String commandWord) {
         return input.equals(commandWord) || input.startsWith(commandWord + " ");
     }
 
@@ -51,7 +77,7 @@ public class Parser {
      * @throws GoopException if the task number is missing, malformed, or outside
      *         the current list
      */
-    public int parseTaskIndex(String input, String commandWord, int taskCount)
+    private int parseTaskIndex(String input, String commandWord, int taskCount)
             throws GoopException {
         String argument = input.substring(commandWord.length()).trim();
         if (argument.isEmpty()) {
@@ -92,7 +118,7 @@ public class Parser {
      * @throws GoopException if the command is unknown or required task details are
      *         invalid
      */
-    public Task parseTask(String input) throws GoopException {
+    private Task parseTask(String input) throws GoopException {
         if (isCommand(input, "todo")) {
             String description = input.substring("todo".length()).trim();
             if (description.isEmpty()) {

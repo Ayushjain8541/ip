@@ -51,34 +51,12 @@ public class Goop {
             ui.showDivider();
 
             try {
-                parser.validateCommand(command);
-
-                if (command.equals("bye")) {
+                Command parsedCommand = parser.parse(command, tasks.size());
+                if (parsedCommand.isExit()) {
                     ui.showGoodbye();
                     break;
                 }
-
-                if (command.equals("list")) {
-                    ui.showTaskList(tasks);
-                    continue;
-                }
-
-                if (parser.isCommand(command, "delete")) {
-                    deleteTask(command);
-                    continue;
-                }
-
-                if (parser.isCommand(command, "unmark")) {
-                    updateTaskStatus(command, "unmark", false);
-                    continue;
-                }
-
-                if (parser.isCommand(command, "mark")) {
-                    updateTaskStatus(command, "mark", true);
-                    continue;
-                }
-
-                addTask(command);
+                executeCommand(parsedCommand);
             } catch (GoopException error) {
                 ui.showError(error.getMessage());
             } catch (IOException error) {
@@ -88,10 +66,27 @@ public class Goop {
     }
 
     /**
+     * Dispatches a parsed command. Execution will move into the command classes
+     * in the next refactoring increment.
+     */
+    private void executeCommand(Command command) throws IOException {
+        if (command instanceof ListCommand) {
+            ui.showTaskList(tasks);
+        } else if (command instanceof DeleteCommand deleteCommand) {
+            deleteTask(deleteCommand.getTaskIndex());
+        } else if (command instanceof UnmarkCommand unmarkCommand) {
+            updateTaskStatus(unmarkCommand.getTaskIndex(), false);
+        } else if (command instanceof MarkCommand markCommand) {
+            updateTaskStatus(markCommand.getTaskIndex(), true);
+        } else if (command instanceof AddCommand addCommand) {
+            addTask(addCommand.getTask());
+        }
+    }
+
+    /**
      * Deletes one task and restores it if the changed list cannot be saved.
      */
-    private void deleteTask(String command) throws GoopException, IOException {
-        int taskIndex = parser.parseTaskIndex(command, "delete", tasks.size());
+    private void deleteTask(int taskIndex) throws IOException {
         Task deletedTask = tasks.delete(taskIndex);
         try {
             storage.saveTasks(tasks);
@@ -105,9 +100,7 @@ public class Goop {
     /**
      * Changes a task's completion state and restores it if saving fails.
      */
-    private void updateTaskStatus(String command, String commandWord, boolean isDone)
-            throws GoopException, IOException {
-        int taskIndex = parser.parseTaskIndex(command, commandWord, tasks.size());
+    private void updateTaskStatus(int taskIndex, boolean isDone) throws IOException {
         boolean wasDone = tasks.get(taskIndex).isDone();
         tasks.setDone(taskIndex, isDone);
         try {
@@ -127,8 +120,7 @@ public class Goop {
     /**
      * Parses and adds one task, removing it again if saving fails.
      */
-    private void addTask(String command) throws GoopException, IOException {
-        Task newTask = parser.parseTask(command);
+    private void addTask(Task newTask) throws IOException {
         tasks.add(newTask);
         try {
             storage.saveTasks(tasks);
