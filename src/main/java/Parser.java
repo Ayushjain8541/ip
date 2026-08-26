@@ -19,11 +19,10 @@ public class Parser {
      * Converts complete user input into a typed, validated command.
      *
      * @param input complete user input
-     * @param taskCount number of tasks currently stored
      * @return command represented by the input
      * @throws GoopException if the command or its arguments are invalid
      */
-    public Command parse(String input, int taskCount) throws GoopException {
+    public Command parse(String input) throws GoopException {
         validateCommand(input);
 
         if (input.equals("bye")) {
@@ -33,13 +32,13 @@ public class Parser {
             return new ListCommand();
         }
         if (isCommand(input, "delete")) {
-            return new DeleteCommand(parseTaskIndex(input, "delete", taskCount));
+            return new DeleteCommand(parseTaskNumber(input, "delete"));
         }
         if (isCommand(input, "unmark")) {
-            return new UnmarkCommand(parseTaskIndex(input, "unmark", taskCount));
+            return new UnmarkCommand(parseTaskNumber(input, "unmark"));
         }
         if (isCommand(input, "mark")) {
-            return new MarkCommand(parseTaskIndex(input, "mark", taskCount));
+            return new MarkCommand(parseTaskNumber(input, "mark"));
         }
         return new AddCommand(parseTask(input));
     }
@@ -67,17 +66,15 @@ public class Parser {
     }
 
     /**
-     * Parses and validates the task number supplied to {@code mark},
-     * {@code unmark}, or {@code delete}.
+     * Parses the positive task number supplied to {@code mark}, {@code unmark}, or
+     * {@code delete}. Validation against the live task list belongs to the command.
      *
      * @param input complete user input
      * @param commandWord {@code mark}, {@code unmark}, or {@code delete}
-     * @param taskCount number of tasks currently stored
-     * @return zero-based index of the selected task
-     * @throws GoopException if the task number is missing, malformed, or outside
-     *         the current list
+     * @return one-based task number
+     * @throws GoopException if the task number is missing, malformed, or too large
      */
-    private int parseTaskIndex(String input, String commandWord, int taskCount)
+    private int parseTaskNumber(String input, String commandWord)
             throws GoopException {
         String argument = input.substring(commandWord.length()).trim();
         if (argument.isEmpty()) {
@@ -98,16 +95,7 @@ public class Parser {
                     "That task number is too large. Run list and choose a displayed number.");
         }
 
-        if (taskCount == 0) {
-            throw new GoopException("There are no tasks to " + commandWord
-                    + ". Add a task first.");
-        }
-        if (taskNumber > taskCount) {
-            throw new GoopException("Task " + taskNumber
-                    + " is outside the list. Run list and choose a number from 1 to "
-                    + taskCount + ".");
-        }
-        return taskNumber - 1;
+        return taskNumber;
     }
 
     /**

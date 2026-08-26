@@ -1,24 +1,33 @@
+import java.io.IOException;
+
 /**
  * Represents a request to mark one task as incomplete.
  */
-public class UnmarkCommand extends Command {
-    private final int taskIndex;
-
+public class UnmarkCommand extends TaskCommand {
     /**
-     * Creates an unmark command for a zero-based task index.
+     * Creates an unmark command for a one-based task number.
      *
-     * @param taskIndex task to unmark
+     * @param taskNumber task to unmark
      */
-    public UnmarkCommand(int taskIndex) {
-        this.taskIndex = taskIndex;
+    public UnmarkCommand(int taskNumber) {
+        super(taskNumber);
     }
 
     /**
-     * Returns the zero-based index carried by this command.
-     *
-     * @return task index
+     * Unmarks the task, persists the list, and rolls back if saving fails.
      */
-    public int getTaskIndex() {
-        return taskIndex;
+    @Override
+    public void execute(TaskList tasks, Ui ui, Storage storage)
+            throws GoopException, IOException {
+        int taskIndex = getTaskIndex(tasks, "unmark");
+        boolean wasDone = tasks.get(taskIndex).isDone();
+        tasks.setDone(taskIndex, false);
+        try {
+            storage.saveTasks(tasks);
+        } catch (IOException error) {
+            tasks.setDone(taskIndex, wasDone);
+            throw error;
+        }
+        ui.showUnmarkedTask(tasks.get(taskIndex));
     }
 }

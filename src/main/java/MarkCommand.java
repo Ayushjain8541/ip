@@ -1,24 +1,33 @@
+import java.io.IOException;
+
 /**
  * Represents a request to mark one task as complete.
  */
-public class MarkCommand extends Command {
-    private final int taskIndex;
-
+public class MarkCommand extends TaskCommand {
     /**
-     * Creates a mark command for a zero-based task index.
+     * Creates a mark command for a one-based task number.
      *
-     * @param taskIndex task to mark
+     * @param taskNumber task to mark
      */
-    public MarkCommand(int taskIndex) {
-        this.taskIndex = taskIndex;
+    public MarkCommand(int taskNumber) {
+        super(taskNumber);
     }
 
     /**
-     * Returns the zero-based index carried by this command.
-     *
-     * @return task index
+     * Marks the task, persists the list, and rolls back if saving fails.
      */
-    public int getTaskIndex() {
-        return taskIndex;
+    @Override
+    public void execute(TaskList tasks, Ui ui, Storage storage)
+            throws GoopException, IOException {
+        int taskIndex = getTaskIndex(tasks, "mark");
+        boolean wasDone = tasks.get(taskIndex).isDone();
+        tasks.setDone(taskIndex, true);
+        try {
+            storage.saveTasks(tasks);
+        } catch (IOException error) {
+            tasks.setDone(taskIndex, wasDone);
+            throw error;
+        }
+        ui.showMarkedTask(tasks.get(taskIndex));
     }
 }

@@ -1,24 +1,32 @@
+import java.io.IOException;
+
 /**
  * Represents a request to delete one task.
  */
-public class DeleteCommand extends Command {
-    private final int taskIndex;
-
+public class DeleteCommand extends TaskCommand {
     /**
-     * Creates a delete command for a zero-based task index.
+     * Creates a delete command for a one-based task number.
      *
-     * @param taskIndex task to delete
+     * @param taskNumber task to delete
      */
-    public DeleteCommand(int taskIndex) {
-        this.taskIndex = taskIndex;
+    public DeleteCommand(int taskNumber) {
+        super(taskNumber);
     }
 
     /**
-     * Returns the zero-based index carried by this command.
-     *
-     * @return task index
+     * Deletes the task, persists the list, and rolls back if saving fails.
      */
-    public int getTaskIndex() {
-        return taskIndex;
+    @Override
+    public void execute(TaskList tasks, Ui ui, Storage storage)
+            throws GoopException, IOException {
+        int taskIndex = getTaskIndex(tasks, "delete");
+        Task deletedTask = tasks.delete(taskIndex);
+        try {
+            storage.saveTasks(tasks);
+        } catch (IOException error) {
+            tasks.add(taskIndex, deletedTask);
+            throw error;
+        }
+        ui.showDeletedTask(deletedTask, tasks.size());
     }
 }
