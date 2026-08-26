@@ -54,10 +54,10 @@ public class Storage {
      * Replaces the data file with a representation of the current task list,
      * creating its parent folder when necessary.
      *
-     * @param tasks current tasks to save
+     * @param tasks current task list to save
      * @throws IOException if the folder or data file cannot be written
      */
-    public void saveTasks(List<Task> tasks) throws IOException {
+    public void saveTasks(TaskList tasks) throws IOException {
         Path parentDirectory = filePath.getParent();
         try {
             if (parentDirectory != null) {
@@ -65,7 +65,7 @@ public class Storage {
             }
 
             List<String> lines = new ArrayList<>();
-            for (Task task : tasks) {
+            for (Task task : tasks.getTasks()) {
                 lines.add(formatTask(task));
             }
             Files.write(filePath, lines, StandardCharsets.UTF_8);
