@@ -24,9 +24,27 @@ Unless the user says otherwise, assume that you are assisting a student working 
 
 # Project-specific requirements
 
+## Skill usage
+
+Do not use or invoke any skill whose name starts with `superpowers:` for work in this repository. This prohibition applies to every chat and task in the project, including situations where a `superpowers:` skill would otherwise be automatically selected. Use the applicable project instructions and ordinary tools instead.
+
 ## Java version:
 
 Ensure that Java 25 is used when running the application or build tasks. On macOS, use `sdk use java 25.0.3.fx-zulu` to switch to Java 25 if needed.
+
+## Post-update UI testing
+
+After every code update:
+
+1. Review `test/ui-test-plan.md` and update it when the changed behavior or test coverage requires it. Every test case must state its aim, inputs, and exact expected output.
+2. Invoke the project-specific `$test-ui` skill at `.codex/skills/test-ui/SKILL.md` and run the full UI test plan.
+3. Stop at the first failure and report the recorded console input, actual output, and expected output.
+
+## JUnit testing and coverage
+
+The current JUnit suite has **63.2% line coverage (235 of 372 executable lines)**, measured on 2026-08-26 with JaCoCo by running `./gradlew clean test jacocoTestReport` on Java 25. The HTML report is generated at `build/reports/jacoco/test/html/index.html`.
+
+After every code change, review the affected behavior and update or add JUnit tests in `src/test/java` whenever relevant. Run the full JUnit suite and regenerate the coverage report before considering the change complete. When production code or tests change, remeasure coverage and keep the baseline in this section current.
 
 ## Git
 
