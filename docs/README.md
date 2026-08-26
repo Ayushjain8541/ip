@@ -8,16 +8,15 @@
 
 ## Adding deadlines
 
-// Describe the action and its outcome.
+Use `deadline DESCRIPTION /by DATE TIME` to add a task with a deadline.
+Goop accepts `d/M/yyyy HHmm` and `yyyy-MM-dd HHmm` date-time formats.
 
-// Give examples of usage
+Example: `deadline return book /by 2/12/2019 1800`
 
-Example: `keyword (optional arguments)`
-
-// A description of the expected outcome goes here
+Goop understands the date and displays it in a more readable format:
 
 ```
-expected output
+[D][ ] return book (by: Dec 2 2019, 6:00 PM)
 ```
 
 ## Feature ABC

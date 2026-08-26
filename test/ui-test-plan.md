@@ -169,14 +169,14 @@ ____________________________________________________________
 ____________________________________________________________
 ```
 
-## TC-005: Add deadline and event tasks
+## TC-005: Parse a deadline date-time and add an event
 
-- Aim: Verify that deadline and event details remain strings and are displayed with their task types.
+- Aim: Verify that a day-first deadline date-time is parsed and reformatted while event details and task types remain visible.
 
 ### Inputs
 
 ```text
-deadline do homework /by no idea :-p
+deadline do homework /by 2/12/2019 1800
 event project meeting /from Mon 2pm /to 4pm
 list
 bye
@@ -197,7 +197,7 @@ ____________________________________________________________
 ____________________________________________________________
 ____________________________________________________________
  Got it. I've added this task:
-   [D][ ] do homework (by: no idea :-p)
+   [D][ ] do homework (by: Dec 2 2019, 6:00 PM)
  Now you have 1 tasks in the list.
 ____________________________________________________________
 ____________________________________________________________
@@ -207,7 +207,7 @@ ____________________________________________________________
 ____________________________________________________________
 ____________________________________________________________
  Here are the tasks in your list:
- 1.[D][ ] do homework (by: no idea :-p)
+ 1.[D][ ] do homework (by: Dec 2 2019, 6:00 PM)
  2.[E][ ] project meeting (from: Mon 2pm to: 4pm)
 ____________________________________________________________
 ____________________________________________________________
@@ -263,7 +263,7 @@ ____________________________________________________________
 
 ```text
 todo read book
-deadline return book /by June 6th
+deadline return book /by 2019-06-06 1800
 event project meeting /from Aug 6th 2pm /to 4pm
 delete 2
 list
@@ -290,7 +290,7 @@ ____________________________________________________________
 ____________________________________________________________
 ____________________________________________________________
  Got it. I've added this task:
-   [D][ ] return book (by: June 6th)
+   [D][ ] return book (by: Jun 6 2019, 6:00 PM)
  Now you have 2 tasks in the list.
 ____________________________________________________________
 ____________________________________________________________
@@ -300,7 +300,7 @@ ____________________________________________________________
 ____________________________________________________________
 ____________________________________________________________
  Noted. I've removed this task:
-   [D][ ] return book (by: June 6th)
+   [D][ ] return book (by: Jun 6 2019, 6:00 PM)
  Now you have 2 tasks in the list.
 ____________________________________________________________
 ____________________________________________________________
@@ -373,9 +373,9 @@ ____________________________________________________________
 ____________________________________________________________
 ```
 
-## TC-009: Reject malformed deadline and event details
+## TC-009: Reject invalid deadline and event details
 
-- Aim: Verify that every required deadline and event component produces specific correction guidance when missing.
+- Aim: Verify that missing deadline/event components, unsupported date formats, and impossible calendar dates produce specific correction guidance.
 
 ### Inputs
 
@@ -384,6 +384,8 @@ deadline submit report
 deadline /by Sunday
 deadline submit report /by
 deadline submit report /byte Sunday
+deadline submit report /by tomorrow
+deadline submit report /by 31/2/2019 1800
 event meeting
 event /from Mon /to Tue
 event meeting /from /to Tue
@@ -418,6 +420,12 @@ ____________________________________________________________
 ____________________________________________________________
 ____________________________________________________________
  ERROR: A deadline needs '/by' between its description and date. Use: deadline <description> /by <date or time>.
+____________________________________________________________
+____________________________________________________________
+ ERROR: The deadline date and time must use d/M/yyyy HHmm or yyyy-MM-dd HHmm. For example: deadline return book /by 2/12/2019 1800.
+____________________________________________________________
+____________________________________________________________
+ ERROR: The deadline date and time must use d/M/yyyy HHmm or yyyy-MM-dd HHmm. For example: deadline return book /by 2/12/2019 1800.
 ____________________________________________________________
 ____________________________________________________________
  ERROR: An event needs '/from' before its start time. Use: event <description> /from <start> /to <end>.

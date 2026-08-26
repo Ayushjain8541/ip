@@ -1,5 +1,9 @@
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -10,6 +14,12 @@ import java.util.Scanner;
 public class Goop {
     /** Relative, OS-independent path used for the user's saved task list. */
     private static final Path DATA_FILE_PATH = Path.of("data", "goop.txt");
+    /** Date-time formats accepted after the {@code /by} delimiter. */
+    private static final List<DateTimeFormatter> DEADLINE_INPUT_FORMATS = List.of(
+            DateTimeFormatter.ofPattern("d/M/uuuu HHmm")
+                    .withResolverStyle(ResolverStyle.STRICT),
+            DateTimeFormatter.ofPattern("uuuu-MM-dd HHmm")
+                    .withResolverStyle(ResolverStyle.STRICT));
 
     /**
      * Greets the user, loads saved tasks, handles task commands, saves every
@@ -244,11 +254,13 @@ public class Goop {
     }
 
     /**
-     * Creates a deadline after validating its description and deadline text.
+     * Creates a deadline after validating its description and parsing its date
+     * and time.
      *
      * @param taskDetails text following the {@code deadline} command
      * @return parsed deadline
-     * @throws GoopException if the description, delimiter, or deadline is missing
+     * @throws GoopException if required details are missing or the deadline is
+     *         not a valid supported date-time
      */
     private static Deadline parseDeadline(String taskDetails) throws GoopException {
         int byPosition = findDelimiter(taskDetails, "/by");
@@ -258,16 +270,38 @@ public class Goop {
         }
 
         String description = taskDetails.substring(0, byPosition).trim();
-        String by = taskDetails.substring(byPosition + "/by".length()).trim();
+        String byText = taskDetails.substring(byPosition + "/by".length()).trim();
         if (description.isEmpty()) {
             throw new GoopException("A deadline needs a description before '/by'. "
                     + "Use: deadline <description> /by <date or time>.");
         }
-        if (by.isEmpty()) {
+        if (byText.isEmpty()) {
             throw new GoopException("A deadline needs a date or time after '/by'. "
                     + "Use: deadline <description> /by <date or time>.");
         }
-        return new Deadline(description, by);
+        return new Deadline(description, parseDeadlineDateTime(byText));
+    }
+
+    /**
+     * Parses a deadline using either the example day-first format or an ISO-style
+     * year-first format.
+     *
+     * @param text date-time text following {@code /by}
+     * @return parsed deadline date and time
+     * @throws GoopException if the text does not represent a valid supported
+     *         date-time
+     */
+    private static LocalDateTime parseDeadlineDateTime(String text) throws GoopException {
+        for (DateTimeFormatter format : DEADLINE_INPUT_FORMATS) {
+            try {
+                return LocalDateTime.parse(text, format);
+            } catch (DateTimeParseException error) {
+                // Try the next supported format.
+            }
+        }
+        throw new GoopException("The deadline date and time must use d/M/yyyy HHmm "
+                + "or yyyy-MM-dd HHmm. For example: deadline return book "
+                + "/by 2/12/2019 1800.");
     }
 
     /**

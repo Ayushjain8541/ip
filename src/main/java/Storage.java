@@ -2,6 +2,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -83,7 +86,8 @@ public class Storage {
         }
         if (task instanceof Deadline deadline) {
             return "D" + FIELD_SEPARATOR + status + FIELD_SEPARATOR + description
-                    + FIELD_SEPARATOR + escape(deadline.getBy());
+                    + FIELD_SEPARATOR
+                    + deadline.getBy().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         }
         if (task instanceof Event event) {
             return "E" + FIELD_SEPARATOR + status + FIELD_SEPARATOR + description
@@ -121,7 +125,8 @@ public class Storage {
         case "D":
             requireFieldCount(fields, 4, lineNumber);
             task = new Deadline(description,
-                    requireText(fields.get(3), lineNumber, "deadline"));
+                    parseDeadline(requireText(fields.get(3), lineNumber, "deadline"),
+                            lineNumber));
             break;
         case "E":
             requireFieldCount(fields, 5, lineNumber);
@@ -137,6 +142,17 @@ public class Storage {
             task.markAsDone();
         }
         return task;
+    }
+
+    /**
+     * Parses the canonical ISO date-time stored for a deadline.
+     */
+    private LocalDateTime parseDeadline(String text, int lineNumber) throws IOException {
+        try {
+            return LocalDateTime.parse(text, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        } catch (DateTimeParseException error) {
+            throw invalidData(lineNumber, "deadline is not a valid ISO date-time");
+        }
     }
 
     /**
