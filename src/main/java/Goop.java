@@ -1,3 +1,5 @@
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -6,9 +8,12 @@ import java.util.Scanner;
  * Starts the Goop chatbot application.
  */
 public class Goop {
+    /** Relative, OS-independent path used for the user's saved task list. */
+    private static final Path DATA_FILE_PATH = Path.of("data", "goop.txt");
+
     /**
-     * Greets the user, stores tasks in memory, updates or deletes them on request,
-     * and exits when the user enters {@code bye}.
+     * Greets the user, loads saved tasks, handles task commands, saves every
+     * successful change, and exits when the user enters {@code bye}.
      *
      * @param args command-line arguments, which are not used
      */
@@ -21,14 +26,26 @@ public class Goop {
                 + " \\____|\\___/ \\___/| .__/\n"
                 + "                  |_|\n";
 
+        Scanner scanner = new Scanner(System.in);
+        Storage storage = new Storage(DATA_FILE_PATH);
+        List<Task> tasks = new ArrayList<>();
+        String loadWarning = null;
+        try {
+            tasks = storage.loadTasks();
+        } catch (IOException error) {
+            loadWarning = error.getMessage();
+        }
+
         System.out.println(divider);
         System.out.print(banner);
         System.out.println(" Hello! I'm Goop.");
         System.out.println(" What can I do for you?");
         System.out.println(divider);
-
-        Scanner scanner = new Scanner(System.in);
-        List<Task> tasks = new ArrayList<>();
+        if (loadWarning != null) {
+            System.out.println(" WARNING: " + loadWarning);
+            System.out.println(" Starting with an empty task list.");
+            System.out.println(divider);
+        }
 
         while (scanner.hasNextLine()) {
             String command = scanner.nextLine().trim();
@@ -58,6 +75,12 @@ public class Goop {
                 if (isCommand(command, "delete")) {
                     int taskIndex = parseTaskIndex(command, "delete", tasks.size());
                     Task deletedTask = tasks.remove(taskIndex);
+                    try {
+                        storage.saveTasks(tasks);
+                    } catch (IOException error) {
+                        tasks.add(taskIndex, deletedTask);
+                        throw error;
+                    }
                     System.out.println(" Noted. I've removed this task:");
                     System.out.println("   " + deletedTask);
                     System.out.println(" Now you have " + tasks.size() + " tasks in the list.");
@@ -67,7 +90,14 @@ public class Goop {
 
                 if (isCommand(command, "unmark")) {
                     int taskIndex = parseTaskIndex(command, "unmark", tasks.size());
+                    boolean wasDone = tasks.get(taskIndex).isDone();
                     tasks.get(taskIndex).markAsNotDone();
+                    try {
+                        storage.saveTasks(tasks);
+                    } catch (IOException error) {
+                        restoreStatus(tasks.get(taskIndex), wasDone);
+                        throw error;
+                    }
                     System.out.println(" OK, I've marked this task as not done yet:");
                     System.out.println("   " + tasks.get(taskIndex));
                     System.out.println(divider);
@@ -76,7 +106,14 @@ public class Goop {
 
                 if (isCommand(command, "mark")) {
                     int taskIndex = parseTaskIndex(command, "mark", tasks.size());
+                    boolean wasDone = tasks.get(taskIndex).isDone();
                     tasks.get(taskIndex).markAsDone();
+                    try {
+                        storage.saveTasks(tasks);
+                    } catch (IOException error) {
+                        restoreStatus(tasks.get(taskIndex), wasDone);
+                        throw error;
+                    }
                     System.out.println(" Nice! I've marked this task as done:");
                     System.out.println("   " + tasks.get(taskIndex));
                     System.out.println(divider);
@@ -85,6 +122,12 @@ public class Goop {
 
                 Task newTask = parseTask(command);
                 tasks.add(newTask);
+                try {
+                    storage.saveTasks(tasks);
+                } catch (IOException error) {
+                    tasks.remove(tasks.size() - 1);
+                    throw error;
+                }
                 System.out.println(" Got it. I've added this task:");
                 System.out.println("   " + newTask);
                 System.out.println(" Now you have " + tasks.size() + " tasks in the list.");
@@ -92,7 +135,25 @@ public class Goop {
             } catch (GoopException error) {
                 System.out.println(" ERROR: " + error.getMessage());
                 System.out.println(divider);
+            } catch (IOException error) {
+                System.out.println(" ERROR: " + error.getMessage()
+                        + " No changes were made.");
+                System.out.println(divider);
             }
+        }
+    }
+
+    /**
+     * Restores a task's completion state after an unsuccessful save.
+     *
+     * @param task task whose state should be restored
+     * @param isDone completion state to restore
+     */
+    private static void restoreStatus(Task task, boolean isDone) {
+        if (isDone) {
+            task.markAsDone();
+        } else {
+            task.markAsNotDone();
         }
     }
 
