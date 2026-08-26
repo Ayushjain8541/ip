@@ -5,8 +5,8 @@ Inputs and expected outputs are compared exactly, including spaces and newlines.
 
 ## Test environment
 
-- Setup command: `javac -d out/production/ip src/main/java/*.java`
-- Run command: `java -cp out/production/ip Goop`
+- Setup command: `javac -d out/production/ip src/main/java/*.java && javac -cp out/production/ip -d out/test/ip test/StorageTest.java && java -cp out/production/ip:out/test/ip StorageTest`
+- Run command: `mkdir -p _temp/ui-test-data && rm -f _temp/ui-test-data/data/goop.txt && cd _temp/ui-test-data && java -cp ../../out/production/ip Goop`
 - Timeout seconds: `10`
 
 ## TC-001: Exit the application
