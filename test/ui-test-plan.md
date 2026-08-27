@@ -245,7 +245,7 @@ ____________________________________________________________
  ERROR: A todo needs a description. Use: todo <description>.
 ____________________________________________________________
 ____________________________________________________________
- ERROR: I don't recognise that command. Use todo, deadline, event, list, mark, unmark, delete, or bye.
+ ERROR: I don't recognise that command. Use todo, deadline, event, list, find, mark, unmark, delete, or bye.
 ____________________________________________________________
 ____________________________________________________________
  ERROR: Please enter a command. For example: todo read book.
@@ -509,6 +509,72 @@ ____________________________________________________________
 ____________________________________________________________
 ____________________________________________________________
  ERROR: The unmark command accepts one positive whole number. Use: unmark 1.
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+## TC-011: Find tasks by description keyword
+
+- Aim: Verify that `find` displays only tasks whose descriptions contain the keyword, preserves their order, renumbers the matches, and rejects a missing keyword.
+
+### Inputs
+
+```text
+todo read book
+deadline return book /by 2019-06-06 1800
+todo write essay
+mark 1
+mark 2
+find book
+find
+bye
+```
+
+### Expected output
+
+```text
+____________________________________________________________
+  ____
+ / ___| ___   ___  _ __
+| |  _ / _ \ / _ \| '_ \
+| |_| | (_) | (_) | |_) |
+ \____|\___/ \___/| .__/
+                  |_|
+ Hello! I'm Goop.
+ What can I do for you?
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] read book
+ Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [D][ ] return book (by: Jun 6 2019, 6:00 PM)
+ Now you have 2 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] write essay
+ Now you have 3 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Nice! I've marked this task as done:
+   [T][X] read book
+____________________________________________________________
+____________________________________________________________
+ Nice! I've marked this task as done:
+   [D][X] return book (by: Jun 6 2019, 6:00 PM)
+____________________________________________________________
+____________________________________________________________
+ Here are the matching tasks in your list:
+ 1.[T][X] read book
+ 2.[D][X] return book (by: Jun 6 2019, 6:00 PM)
+____________________________________________________________
+____________________________________________________________
+ ERROR: The find command needs a keyword. Use: find <keyword>.
 ____________________________________________________________
 ____________________________________________________________
  Bye. Hope to see you again soon!

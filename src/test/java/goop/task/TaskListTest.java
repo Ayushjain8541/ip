@@ -56,4 +56,18 @@ class TaskListTest {
 
         assertEquals(List.of(first, second, third), tasks.getTasks());
     }
+
+    @Test
+    void find_keywordInSomeDescriptions_returnsMatchingTasksInOrder() {
+        Todo firstMatch = new Todo("read book");
+        Todo nonMatch = new Todo("write essay");
+        Todo secondMatch = new Todo("return book");
+        TaskList tasks = new TaskList(List.of(firstMatch, nonMatch, secondMatch));
+
+        List<Task> matches = tasks.find("book");
+
+        assertEquals(List.of(firstMatch, secondMatch), matches);
+        assertThrows(UnsupportedOperationException.class,
+                () -> matches.add(new Todo("another book")));
+    }
 }

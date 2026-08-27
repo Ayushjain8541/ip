@@ -1,5 +1,6 @@
 package goop.ui;
 
+import java.util.List;
 import java.util.Scanner;
 
 import goop.task.Task;
@@ -83,6 +84,19 @@ public class Ui {
         System.out.println(" Here are the tasks in your list:");
         for (int i = 0; i < tasks.size(); i++) {
             System.out.println(" " + (i + 1) + "." + tasks.get(i));
+        }
+        System.out.println(DIVIDER);
+    }
+
+    /**
+     * Displays tasks that matched a find command, numbered within the results.
+     *
+     * @param matchingTasks tasks whose descriptions contain the search keyword
+     */
+    public void showMatchingTasks(List<Task> matchingTasks) {
+        System.out.println(" Here are the matching tasks in your list:");
+        for (int i = 0; i < matchingTasks.size(); i++) {
+            System.out.println(" " + (i + 1) + "." + matchingTasks.get(i));
         }
         System.out.println(DIVIDER);
     }
