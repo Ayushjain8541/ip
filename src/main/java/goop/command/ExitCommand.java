@@ -9,7 +9,17 @@ import goop.ui.Ui;
  */
 public class ExitCommand extends Command {
     /**
+     * Creates an exit command.
+     */
+    public ExitCommand() {
+    }
+
+    /**
      * Displays the farewell message.
+     *
+     * @param tasks Current task list, which is not changed.
+     * @param ui User interface used to display the farewell message.
+     * @param storage Task storage, which is not accessed.
      */
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) {
@@ -19,7 +29,7 @@ public class ExitCommand extends Command {
     /**
      * Identifies this command as the application exit command.
      *
-     * @return true
+     * @return True.
      */
     @Override
     public boolean isExit() {

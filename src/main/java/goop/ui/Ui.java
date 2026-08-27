@@ -30,7 +30,7 @@ public class Ui {
     /**
      * Checks whether another line of user input is available.
      *
-     * @return true when another command can be read
+     * @return True when another command can be read.
      */
     public boolean hasNextCommand() {
         return scanner.hasNextLine();
@@ -39,7 +39,7 @@ public class Ui {
     /**
      * Reads one command and removes surrounding whitespace.
      *
-     * @return trimmed user command
+     * @return Trimmed user command.
      */
     public String readCommand() {
         return scanner.nextLine().trim();
@@ -66,7 +66,7 @@ public class Ui {
     /**
      * Warns that saved data could not be loaded and an empty list will be used.
      *
-     * @param message explanation supplied by storage
+     * @param message Explanation supplied by storage.
      */
     public void showLoadingError(String message) {
         System.out.println(" WARNING: " + message);
@@ -77,7 +77,7 @@ public class Ui {
     /**
      * Displays every task with its one-based list number.
      *
-     * @param tasks tasks to display
+     * @param tasks Tasks to display.
      */
     public void showTaskList(TaskList tasks) {
         System.out.println(" Here are the tasks in your list:");
@@ -90,8 +90,8 @@ public class Ui {
     /**
      * Confirms that a task was deleted.
      *
-     * @param task deleted task
-     * @param taskCount number of remaining tasks
+     * @param task Deleted task.
+     * @param taskCount Number of remaining tasks.
      */
     public void showDeletedTask(Task task, int taskCount) {
         System.out.println(" Noted. I've removed this task:");
@@ -103,7 +103,7 @@ public class Ui {
     /**
      * Confirms that a task was marked as incomplete.
      *
-     * @param task updated task
+     * @param task Updated task.
      */
     public void showUnmarkedTask(Task task) {
         System.out.println(" OK, I've marked this task as not done yet:");
@@ -114,7 +114,7 @@ public class Ui {
     /**
      * Confirms that a task was marked as complete.
      *
-     * @param task updated task
+     * @param task Updated task.
      */
     public void showMarkedTask(Task task) {
         System.out.println(" Nice! I've marked this task as done:");
@@ -125,8 +125,8 @@ public class Ui {
     /**
      * Confirms that a task was added.
      *
-     * @param task added task
-     * @param taskCount current task count
+     * @param task Added task.
+     * @param taskCount Current task count.
      */
     public void showAddedTask(Task task, int taskCount) {
         System.out.println(" Got it. I've added this task:");
@@ -138,7 +138,7 @@ public class Ui {
     /**
      * Displays a recoverable command or storage error.
      *
-     * @param message explanation of the error
+     * @param message Explanation of the error.
      */
     public void showError(String message) {
         System.out.println(" ERROR: " + message);

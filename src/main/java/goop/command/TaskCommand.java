@@ -12,7 +12,7 @@ public abstract class TaskCommand extends Command {
     /**
      * Creates a command targeting a one-based task number entered by the user.
      *
-     * @param taskNumber one-based task number
+     * @param taskNumber One-based task number.
      */
     protected TaskCommand(int taskNumber) {
         this.taskNumber = taskNumber;
@@ -21,10 +21,10 @@ public abstract class TaskCommand extends Command {
     /**
      * Converts the stored task number into a valid zero-based list index.
      *
-     * @param tasks current task list
-     * @param commandWord command name used in error guidance
-     * @return validated zero-based task index
-     * @throws GoopException if the task list is empty or the number is too large
+     * @param tasks Current task list.
+     * @param commandWord Command name used in error guidance.
+     * @return Validated zero-based task index.
+     * @throws GoopException If the task list is empty or the number is too large.
      */
     protected int getTaskIndex(TaskList tasks, String commandWord) throws GoopException {
         if (tasks.size() == 0) {

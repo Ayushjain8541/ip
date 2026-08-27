@@ -28,6 +28,10 @@ Unless the user says otherwise, assume that you are assisting a student working 
 
 Do not use or invoke any skill whose name starts with `superpowers:` for work in this repository. This prohibition applies to every chat and task in the project, including situations where a `superpowers:` skill would otherwise be automatically selected. Use the applicable project instructions and ordinary tools instead.
 
+## Java coding standard
+
+For every task that creates, edits, refactors, or reviews Java code, invoke the project-specific `$seedu-java-coding-standard` skill at `.codex/skills/seedu-java-coding-standard/SKILL.md`. All Java code in this project must follow that skill's SE-EDU Java coding standard. For topics not covered by the SE-EDU standard, follow the Google Java Style Guide as directed by the skill.
+
 ## Java version:
 
 Ensure that Java 25 is used when running the application or build tasks. On macOS, use `sdk use java 25.0.3.fx-zulu` to switch to Java 25 if needed.
@@ -42,7 +46,7 @@ After every code update:
 
 ## JUnit testing and coverage
 
-The current JUnit suite has **63.2% line coverage (235 of 372 executable lines)**, measured on 2026-08-26 with JaCoCo by running `./gradlew clean test jacocoTestReport` on Java 25. The HTML report is generated at `build/reports/jacoco/test/html/index.html`.
+The current JUnit suite has **63.0% line coverage (237 of 376 executable lines)**, measured on 2026-08-27 with JaCoCo by running `./gradlew clean test jacocoTestReport` on Java 25. The HTML report is generated at `build/reports/jacoco/test/html/index.html`.
 
 After every code change, review the affected behavior and update or add JUnit tests in `src/test/java` whenever relevant. Run the full JUnit suite and regenerate the coverage report before considering the change complete. When production code or tests change, remeasure coverage and keep the baseline in this section current.
 
