@@ -23,6 +23,12 @@ public class DeleteCommand extends TaskCommand {
 
     /**
      * Deletes the task, persists the list, and rolls back if saving fails.
+     *
+     * @param tasks task list from which the task is deleted
+     * @param ui user interface used to display the deleted task
+     * @param storage storage used to persist the updated task list
+     * @throws GoopException if the requested task number is outside the list
+     * @throws IOException if the updated task list cannot be saved
      */
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage)

@@ -12,6 +12,12 @@ import goop.ui.Ui;
  */
 public abstract class Command {
     /**
+     * Creates a command.
+     */
+    protected Command() {
+    }
+
+    /**
      * Performs this command using the application's collaborators.
      *
      * @param tasks task list to inspect or update

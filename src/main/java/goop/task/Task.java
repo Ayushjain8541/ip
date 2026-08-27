@@ -4,7 +4,10 @@ package goop.task;
  * Represents a task and whether it has been completed.
  */
 public class Task {
+    /** Text describing the task. */
     protected String description;
+
+    /** Whether the task has been completed. */
     protected boolean isDone;
 
     /**

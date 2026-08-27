@@ -4,7 +4,10 @@ package goop.task;
  * Represents a task that takes place between a start and end date or time.
  */
 public class Event extends Task {
+    /** Text describing when the event starts. */
     protected String from;
+
+    /** Text describing when the event ends. */
     protected String to;
 
     /**

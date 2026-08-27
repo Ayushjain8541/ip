@@ -9,7 +9,17 @@ import goop.ui.Ui;
  */
 public class ListCommand extends Command {
     /**
+     * Creates a list command.
+     */
+    public ListCommand() {
+    }
+
+    /**
      * Displays the current task list.
+     *
+     * @param tasks task list to display
+     * @param ui user interface used to display the task list
+     * @param storage task storage, which is not accessed
      */
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) {
