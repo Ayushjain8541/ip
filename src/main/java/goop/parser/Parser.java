@@ -31,6 +31,12 @@ public class Parser {
                     .withResolverStyle(ResolverStyle.STRICT));
 
     /**
+     * Creates a parser for Goop commands.
+     */
+    public Parser() {
+    }
+
+    /**
      * Converts complete user input into a typed, validated command.
      *
      * @param input complete user input

@@ -24,6 +24,11 @@ public class AddCommand extends Command {
 
     /**
      * Adds the task, persists the list, and rolls back if saving fails.
+     *
+     * @param tasks task list to which the task is added
+     * @param ui user interface used to display the added task
+     * @param storage storage used to persist the updated task list
+     * @throws IOException if the updated task list cannot be saved
      */
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) throws IOException {
