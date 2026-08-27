@@ -17,9 +17,9 @@ public class ListCommand extends Command {
     /**
      * Displays the current task list.
      *
-     * @param tasks task list to display
-     * @param ui user interface used to display the task list
-     * @param storage task storage, which is not accessed
+     * @param tasks Task list to display.
+     * @param ui User interface used to display the task list.
+     * @param storage Task storage, which is not accessed.
      */
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) {

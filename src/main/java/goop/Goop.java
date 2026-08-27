@@ -26,7 +26,7 @@ public class Goop {
     /**
      * Creates a chatbot using the given task data file.
      *
-     * @param filePath path used to load and save tasks
+     * @param filePath Path used to load and save tasks.
      */
     public Goop(Path filePath) {
         parser = new Parser();
@@ -75,7 +75,7 @@ public class Goop {
     /**
      * Starts Goop using the default relative data path.
      *
-     * @param args command-line arguments, which are not used
+     * @param args Command-line arguments, which are not used.
      */
     public static void main(String[] args) {
         new Goop(DATA_FILE_PATH).run();

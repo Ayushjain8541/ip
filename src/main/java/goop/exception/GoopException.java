@@ -10,7 +10,7 @@ public class GoopException extends Exception {
     /**
      * Creates an exception containing guidance for correcting the input.
      *
-     * @param message explanation of the error and how to fix it
+     * @param message Explanation of the error and how to fix it.
      */
     public GoopException(String message) {
         super(message);

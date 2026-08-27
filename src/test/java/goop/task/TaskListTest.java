@@ -18,18 +18,18 @@ class TaskListTest {
     @Test
     void constructorAndGetTasks_externalListChangesCannotMutateTaskList() {
         Todo firstTask = new Todo("first");
-        List<Task> source = new ArrayList<>(List.of(firstTask));
-        TaskList tasks = new TaskList(source);
+        List<Task> sourceTasks = new ArrayList<>(List.of(firstTask));
+        TaskList tasks = new TaskList(sourceTasks);
 
-        source.clear();
-        List<Task> snapshot = tasks.getTasks();
+        sourceTasks.clear();
+        List<Task> snapshotTasks = tasks.getTasks();
         tasks.add(new Todo("second"));
 
         assertEquals(2, tasks.size());
-        assertEquals(1, snapshot.size());
-        assertSame(firstTask, snapshot.get(0));
+        assertEquals(1, snapshotTasks.size());
+        assertSame(firstTask, snapshotTasks.get(0));
         assertThrows(UnsupportedOperationException.class,
-                () -> snapshot.add(new Todo("cannot add")));
+                () -> snapshotTasks.add(new Todo("cannot add")));
     }
 
     @Test

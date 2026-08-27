@@ -19,7 +19,7 @@ public class TaskList {
     /**
      * Creates a task list containing a defensive copy of the loaded tasks.
      *
-     * @param tasks tasks loaded from storage
+     * @param tasks Tasks loaded from storage.
      */
     public TaskList(List<Task> tasks) {
         this.tasks = new ArrayList<>(tasks);
@@ -28,8 +28,8 @@ public class TaskList {
     /**
      * Returns the task at the given zero-based index.
      *
-     * @param index zero-based task index
-     * @return selected task
+     * @param index Zero-based task index.
+     * @return Selected task.
      */
     public Task get(int index) {
         return tasks.get(index);
@@ -38,7 +38,7 @@ public class TaskList {
     /**
      * Returns the number of tasks in the list.
      *
-     * @return task count
+     * @return Task count.
      */
     public int size() {
         return tasks.size();
@@ -47,7 +47,7 @@ public class TaskList {
     /**
      * Adds a task to the end of the list.
      *
-     * @param task task to add
+     * @param task Task to add.
      */
     public void add(Task task) {
         tasks.add(task);
@@ -57,8 +57,8 @@ public class TaskList {
      * Inserts a task at a specific position. This is used to restore a deleted
      * task when saving the changed list is unsuccessful.
      *
-     * @param index zero-based insertion index
-     * @param task task to insert
+     * @param index Zero-based insertion index.
+     * @param task Task to insert.
      */
     public void add(int index, Task task) {
         tasks.add(index, task);
@@ -67,8 +67,8 @@ public class TaskList {
     /**
      * Deletes and returns the task at the given position.
      *
-     * @param index zero-based task index
-     * @return deleted task
+     * @param index Zero-based task index.
+     * @return Deleted task.
      */
     public Task delete(int index) {
         return tasks.remove(index);
@@ -77,8 +77,8 @@ public class TaskList {
     /**
      * Updates the completion state of one task.
      *
-     * @param index zero-based task index
-     * @param isDone completion state to apply
+     * @param index Zero-based task index.
+     * @param isDone Completion state to apply.
      */
     public void setDone(int index, boolean isDone) {
         if (isDone) {
@@ -91,7 +91,7 @@ public class TaskList {
     /**
      * Returns an unmodifiable snapshot suitable for saving to storage.
      *
-     * @return current tasks in list order
+     * @return Current tasks in list order.
      */
     public List<Task> getTasks() {
         return List.copyOf(tasks);

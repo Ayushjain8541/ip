@@ -1,3 +1,5 @@
+package goop;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -14,8 +16,8 @@ public class StorageTest {
      * Launches Goop in an isolated temporary directory and verifies persistence
      * across separate application processes.
      *
-     * @param args command-line arguments, which are not used
-     * @throws Exception if a process or temporary-file operation fails
+     * @param args Command-line arguments, which are not used.
+     * @throws Exception If a process or temporary-file operation fails.
      */
     public static void main(String[] args) throws Exception {
         Path temporaryDirectory = Files.createTempDirectory("goop-storage-test-");

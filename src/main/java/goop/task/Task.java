@@ -13,7 +13,7 @@ public class Task {
     /**
      * Creates an incomplete task with the given description.
      *
-     * @param description text describing the task
+     * @param description Text describing the task.
      */
     public Task(String description) {
         this.description = description;
@@ -23,7 +23,7 @@ public class Task {
     /**
      * Returns the text describing this task.
      *
-     * @return task description
+     * @return Task description.
      */
     public String getDescription() {
         return description;
@@ -32,7 +32,7 @@ public class Task {
     /**
      * Checks whether this task has been completed.
      *
-     * @return true when the task is complete
+     * @return True when the task is complete.
      */
     public boolean isDone() {
         return isDone;
@@ -41,7 +41,7 @@ public class Task {
     /**
      * Returns the icon used to display the task's completion status.
      *
-     * @return {@code X} when done, or a space when not done
+     * @return {@code X} when done, or a space when not done.
      */
     public String getStatusIcon() {
         return isDone ? "X" : " ";
@@ -64,7 +64,7 @@ public class Task {
     /**
      * Returns the task in the format used by the chatbot.
      *
-     * @return the status icon followed by the task description
+     * @return The status icon followed by the task description.
      */
     @Override
     public String toString() {

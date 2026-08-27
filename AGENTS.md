@@ -28,6 +28,10 @@ Unless the user says otherwise, assume that you are assisting a student working 
 
 Do not use or invoke any skill whose name starts with `superpowers:` for work in this repository. This prohibition applies to every chat and task in the project, including situations where a `superpowers:` skill would otherwise be automatically selected. Use the applicable project instructions and ordinary tools instead.
 
+## Java coding standard
+
+For every task that creates, edits, refactors, or reviews Java code, invoke the project-specific `$seedu-java-coding-standard` skill at `.codex/skills/seedu-java-coding-standard/SKILL.md`. All Java code in this project must follow that skill's SE-EDU Java coding standard. For topics not covered by the SE-EDU standard, follow the Google Java Style Guide as directed by the skill.
+
 ## Java version:
 
 Ensure that Java 25 is used when running the application or build tasks. On macOS, use `sdk use java 25.0.3.fx-zulu` to switch to Java 25 if needed.

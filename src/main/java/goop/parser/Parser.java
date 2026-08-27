@@ -39,9 +39,9 @@ public class Parser {
     /**
      * Converts complete user input into a typed, validated command.
      *
-     * @param input complete user input
-     * @return command represented by the input
-     * @throws GoopException if the command or its arguments are invalid
+     * @param input Complete user input.
+     * @return Command represented by the input.
+     * @throws GoopException If the command or its arguments are invalid.
      */
     public Command parse(String input) throws GoopException {
         validateCommand(input);
@@ -78,9 +78,9 @@ public class Parser {
      * Checks whether an input contains the given command word, optionally followed
      * by arguments.
      *
-     * @param input complete user input
-     * @param commandWord command word to match
-     * @return true when the input contains the command
+     * @param input Complete user input.
+     * @param commandWord Command word to match.
+     * @return True when the input contains the command.
      */
     private boolean isCommand(String input, String commandWord) {
         return input.equals(commandWord) || input.startsWith(commandWord + " ");
@@ -90,10 +90,10 @@ public class Parser {
      * Parses the positive task number supplied to {@code mark}, {@code unmark}, or
      * {@code delete}. Validation against the live task list belongs to the command.
      *
-     * @param input complete user input
-     * @param commandWord {@code mark}, {@code unmark}, or {@code delete}
-     * @return one-based task number
-     * @throws GoopException if the task number is missing, malformed, or too large
+     * @param input Complete user input.
+     * @param commandWord {@code mark}, {@code unmark}, or {@code delete}.
+     * @return One-based task number.
+     * @throws GoopException If the task number is missing, malformed, or too large.
      */
     private int parseTaskNumber(String input, String commandWord)
             throws GoopException {
@@ -122,10 +122,10 @@ public class Parser {
     /**
      * Creates a task from a valid add command.
      *
-     * @param input complete user input
-     * @return task described by the input
-     * @throws GoopException if the command is unknown or required task details are
-     *         invalid
+     * @param input Complete user input.
+     * @return Task described by the input.
+     * @throws GoopException If the command is unknown or required task details are
+     *         invalid.
      */
     private Task parseTask(String input) throws GoopException {
         if (isCommand(input, "todo")) {

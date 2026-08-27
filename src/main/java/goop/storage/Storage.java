@@ -27,7 +27,7 @@ public class Storage {
     /**
      * Creates storage that uses the given OS-independent path.
      *
-     * @param filePath path of the task data file
+     * @param filePath Path of the task data file.
      */
     public Storage(Path filePath) {
         this.filePath = filePath;
@@ -36,8 +36,8 @@ public class Storage {
     /**
      * Loads all saved tasks. A missing file represents an empty task list.
      *
-     * @return tasks reconstructed from the data file
-     * @throws IOException if the file cannot be read or contains invalid data
+     * @return Tasks reconstructed from the data file.
+     * @throws IOException If the file cannot be read or contains invalid data.
      */
     public List<Task> loadTasks() throws IOException {
         if (Files.notExists(filePath)) {
@@ -62,8 +62,8 @@ public class Storage {
      * Replaces the data file with a representation of the current task list,
      * creating its parent folder when necessary.
      *
-     * @param tasks current task list to save
-     * @throws IOException if the folder or data file cannot be written
+     * @param tasks Current task list to save.
+     * @throws IOException If the folder or data file cannot be written.
      */
     public void saveTasks(TaskList tasks) throws IOException {
         Path parentDirectory = filePath.getParent();
@@ -126,24 +126,24 @@ public class Storage {
         String description = requireText(fields.get(2), lineNumber, "description");
         Task task;
         switch (fields.get(0)) {
-        case "T":
-            requireFieldCount(fields, 3, lineNumber);
-            task = new Todo(description);
-            break;
-        case "D":
-            requireFieldCount(fields, 4, lineNumber);
-            task = new Deadline(description,
-                    parseDeadline(requireText(fields.get(3), lineNumber, "deadline"),
-                            lineNumber));
-            break;
-        case "E":
-            requireFieldCount(fields, 5, lineNumber);
-            task = new Event(description,
-                    requireText(fields.get(3), lineNumber, "event start"),
-                    requireText(fields.get(4), lineNumber, "event end"));
-            break;
-        default:
-            throw invalidData(lineNumber, "unknown task type");
+            case "T":
+                requireFieldCount(fields, 3, lineNumber);
+                task = new Todo(description);
+                break;
+            case "D":
+                requireFieldCount(fields, 4, lineNumber);
+                task = new Deadline(description,
+                        parseDeadline(requireText(fields.get(3), lineNumber, "deadline"),
+                                lineNumber));
+                break;
+            case "E":
+                requireFieldCount(fields, 5, lineNumber);
+                task = new Event(description,
+                        requireText(fields.get(3), lineNumber, "event start"),
+                        requireText(fields.get(4), lineNumber, "event end"));
+                break;
+            default:
+                throw invalidData(lineNumber, "unknown task type");
         }
 
         if (isDone) {
