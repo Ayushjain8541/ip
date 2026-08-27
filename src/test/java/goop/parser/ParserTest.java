@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import goop.command.Command;
+import goop.command.FindCommand;
 import goop.exception.GoopException;
 import goop.storage.Storage;
 import goop.task.Deadline;
@@ -55,6 +56,22 @@ class ParserTest {
         assertEquals("The deadline date and time must use d/M/yyyy HHmm "
                 + "or yyyy-MM-dd HHmm. For example: deadline return book "
                 + "/by 2/12/2019 1800.", error.getMessage());
+    }
+
+    @Test
+    void parse_findWithKeyword_createsFindCommand() throws Exception {
+        Command command = new Parser().parse("find book");
+
+        assertInstanceOf(FindCommand.class, command);
+    }
+
+    @Test
+    void parse_findWithoutKeyword_throwsHelpfulException() {
+        GoopException error = assertThrows(GoopException.class,
+                () -> new Parser().parse("find"));
+
+        assertEquals("The find command needs a keyword. Use: find <keyword>.",
+                error.getMessage());
     }
 
     /** Parses and executes an add command so the task produced by the parser can be inspected. */

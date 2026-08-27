@@ -10,6 +10,7 @@ import goop.command.AddCommand;
 import goop.command.Command;
 import goop.command.DeleteCommand;
 import goop.command.ExitCommand;
+import goop.command.FindCommand;
 import goop.command.ListCommand;
 import goop.command.MarkCommand;
 import goop.command.UnmarkCommand;
@@ -51,6 +52,9 @@ public class Parser {
         }
         if (input.equals("list")) {
             return new ListCommand();
+        }
+        if (isCommand(input, "find")) {
+            return new FindCommand(parseKeyword(input));
         }
         if (isCommand(input, "delete")) {
             return new DeleteCommand(parseTaskNumber(input, "delete"));
@@ -146,7 +150,23 @@ public class Parser {
         }
 
         throw new GoopException("I don't recognise that command. Use todo, deadline, "
-                + "event, list, mark, unmark, delete, or bye.");
+                + "event, list, find, mark, unmark, delete, or bye.");
+    }
+
+    /**
+     * Extracts the non-empty keyword supplied to {@code find}.
+     *
+     * @param input Complete user input.
+     * @return Keyword used to search task descriptions.
+     * @throws GoopException If no keyword was supplied.
+     */
+    private String parseKeyword(String input) throws GoopException {
+        String keyword = input.substring("find".length()).trim();
+        if (keyword.isEmpty()) {
+            throw new GoopException(
+                    "The find command needs a keyword. Use: find <keyword>.");
+        }
+        return keyword;
     }
 
     /**
