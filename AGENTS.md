@@ -46,12 +46,16 @@ After every code update:
 
 ## JUnit testing and coverage
 
-The current JUnit suite has **63.3% line coverage (252 of 398 executable lines)**, measured on 2026-09-02 with JaCoCo by running `./gradlew clean test jacocoTestReport` on Java 25. The HTML report is generated at `build/reports/jacoco/test/html/index.html`.
+The current JUnit suite has **63.2% line coverage (308 of 487 executable lines)**, measured on 2026-09-02 with JaCoCo by running `./gradlew clean test jacocoTestReport` on Java 25. The HTML report is generated at `build/reports/jacoco/test/html/index.html`.
 
 After every code change, review the affected behavior and update or add JUnit tests in `src/test/java` whenever relevant. Run the full JUnit suite and regenerate the coverage report before considering the change complete. When production code or tests change, remeasure coverage and keep the baseline in this section current.
 
 ## Git
 
+Before proposing, creating, amending, or squashing any commit, invoke and follow
+the project-specific `$seedu-git-standard` skill at
+`.codex/skills/seedu-git-standard/SKILL.md`. Its commit-message and branch-name
+rules are mandatory for all future commits in this repository.
 Use lightweight tags unless the user requests an annotated tag.
 When proposing or creating a commit message, include enough detail to explain the rationale for the change.
 Do not commit or push unless explicitly asked.
