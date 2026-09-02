@@ -28,8 +28,8 @@ class TaskListTest {
         assertEquals(2, tasks.size());
         assertEquals(1, snapshotTasks.size());
         assertSame(firstTask, snapshotTasks.get(0));
-        assertThrows(UnsupportedOperationException.class,
-                () -> snapshotTasks.add(new Todo("cannot add")));
+        assertThrows(UnsupportedOperationException.class, () ->
+                snapshotTasks.add(new Todo("cannot add")));
     }
 
     @Test
@@ -67,7 +67,7 @@ class TaskListTest {
         List<Task> matches = tasks.find("book");
 
         assertEquals(List.of(firstMatch, secondMatch), matches);
-        assertThrows(UnsupportedOperationException.class,
-                () -> matches.add(new Todo("another book")));
+        assertThrows(UnsupportedOperationException.class, () ->
+                matches.add(new Todo("another book")));
     }
 }

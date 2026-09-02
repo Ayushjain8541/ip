@@ -13,7 +13,6 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import goop.storage.Storage;
-import goop.task.Task;
 import goop.task.TaskList;
 import goop.task.Todo;
 import goop.ui.Ui;
@@ -30,8 +29,8 @@ class CommandTest {
         Todo existingTask = new Todo("existing");
         TaskList tasks = new TaskList(List.of(existingTask));
 
-        IOException error = assertThrows(IOException.class,
-                () -> new AddCommand(new Todo("new")).execute(tasks, ui, failingStorage));
+        IOException error = assertThrows(IOException.class, () ->
+                new AddCommand(new Todo("new")).execute(tasks, ui, failingStorage));
 
         assertEquals("simulated save failure", error.getMessage());
         assertEquals(1, tasks.size());
@@ -45,8 +44,8 @@ class CommandTest {
         Todo third = new Todo("third");
         TaskList tasks = new TaskList(List.of(first, second, third));
 
-        assertThrows(IOException.class,
-                () -> new DeleteCommand(2).execute(tasks, ui, failingStorage));
+        assertThrows(IOException.class, () ->
+                new DeleteCommand(2).execute(tasks, ui, failingStorage));
 
         assertEquals(3, tasks.size());
         assertSame(first, tasks.get(0));
@@ -61,12 +60,12 @@ class CommandTest {
         completedTask.markAsDone();
         TaskList tasks = new TaskList(List.of(incompleteTask, completedTask));
 
-        assertThrows(IOException.class,
-                () -> new MarkCommand(1).execute(tasks, ui, failingStorage));
+        assertThrows(IOException.class, () ->
+                new MarkCommand(1).execute(tasks, ui, failingStorage));
         assertFalse(incompleteTask.isDone());
 
-        assertThrows(IOException.class,
-                () -> new UnmarkCommand(2).execute(tasks, ui, failingStorage));
+        assertThrows(IOException.class, () ->
+                new UnmarkCommand(2).execute(tasks, ui, failingStorage));
         assertTrue(completedTask.isDone());
     }
 

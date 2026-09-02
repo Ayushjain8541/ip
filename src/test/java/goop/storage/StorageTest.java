@@ -75,8 +75,8 @@ class StorageTest {
                 "T | 0 | valid task\nD | 0 | impossible date | 2019-02-30T18:00:00\n",
                 StandardCharsets.UTF_8);
 
-        IOException error = assertThrows(IOException.class,
-                () -> new Storage(dataFile).loadTasks());
+        IOException error = assertThrows(IOException.class, () ->
+                new Storage(dataFile).loadTasks());
 
         assertEquals("Saved task data is invalid at line 2 "
                 + "(deadline is not a valid ISO date-time).", error.getMessage());

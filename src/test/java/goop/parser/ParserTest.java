@@ -50,8 +50,8 @@ class ParserTest {
 
     @Test
     void parse_impossibleDeadlineDate_throwsHelpfulException() {
-        GoopException error = assertThrows(GoopException.class,
-                () -> new Parser().parse("deadline return book /by 31/2/2019 1800"));
+        GoopException error = assertThrows(GoopException.class, () ->
+                new Parser().parse("deadline return book /by 31/2/2019 1800"));
 
         assertEquals("The deadline date and time must use d/M/yyyy HHmm "
                 + "or yyyy-MM-dd HHmm. For example: deadline return book "
@@ -67,8 +67,8 @@ class ParserTest {
 
     @Test
     void parse_findWithoutKeyword_throwsHelpfulException() {
-        GoopException error = assertThrows(GoopException.class,
-                () -> new Parser().parse("find"));
+        GoopException error = assertThrows(GoopException.class, () ->
+                new Parser().parse("find"));
 
         assertEquals("The find command needs a keyword. Use: find <keyword>.",
                 error.getMessage());
