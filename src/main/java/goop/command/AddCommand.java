@@ -36,6 +36,8 @@ public class AddCommand extends Command {
         try {
             storage.saveTasks(tasks);
         } catch (IOException error) {
+            assert tasks.size() > 0 && tasks.get(tasks.size() - 1) == task
+                    : "The added task must remain last so rollback removes the correct task";
             tasks.delete(tasks.size() - 1);
             throw error;
         }
