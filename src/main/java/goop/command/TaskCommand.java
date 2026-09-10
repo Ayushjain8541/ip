@@ -15,6 +15,7 @@ public abstract class TaskCommand extends Command {
      * @param taskNumber One-based task number.
      */
     protected TaskCommand(int taskNumber) {
+        assert taskNumber > 0 : "The parser must supply a positive task number";
         this.taskNumber = taskNumber;
     }
 

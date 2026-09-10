@@ -101,6 +101,7 @@ public class Parser {
      */
     private int parseTaskNumber(String input, String commandWord)
             throws GoopException {
+        assert isCommand(input, commandWord) : "Task-number parsing requires the matching command";
         String argument = input.substring(commandWord.length()).trim();
         if (argument.isEmpty()) {
             throw new GoopException("The " + commandWord

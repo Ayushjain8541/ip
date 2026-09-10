@@ -28,6 +28,14 @@ class ParserTest {
     private Path temporaryDirectory;
 
     @Test
+    void parse_nonPositiveTaskNumbers_throwsGoopException() {
+        for (String commandWord : new String[] {"mark", "unmark", "delete"}) {
+            assertThrows(GoopException.class, () -> new Parser().parse(commandWord + " 0"));
+            assertThrows(GoopException.class, () -> new Parser().parse(commandWord + " -1"));
+        }
+    }
+
+    @Test
     void parse_validDayFirstDeadline_createsDeadlineWithParsedDateTime() throws Exception {
         Task task = parseAndExecute("deadline return book /by 2/12/2019 1800");
 

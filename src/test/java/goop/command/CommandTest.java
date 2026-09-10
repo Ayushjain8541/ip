@@ -25,6 +25,15 @@ class CommandTest {
     private final Storage failingStorage = new FailingStorage();
 
     @Test
+    void taskCommand_nonPositiveTaskNumber_assertionFails() {
+        for (int taskNumber : new int[] {0, -1, Integer.MIN_VALUE}) {
+            assertThrows(AssertionError.class, () -> new MarkCommand(taskNumber));
+            assertThrows(AssertionError.class, () -> new UnmarkCommand(taskNumber));
+            assertThrows(AssertionError.class, () -> new DeleteCommand(taskNumber));
+        }
+    }
+
+    @Test
     void addCommand_saveFails_removesNewTask() {
         Todo existingTask = new Todo("existing");
         TaskList tasks = new TaskList(List.of(existingTask));
