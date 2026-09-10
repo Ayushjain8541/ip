@@ -5,10 +5,10 @@ package goop.task;
  */
 public class Task {
     /** Text describing the task. */
-    protected String description;
+    private final String description;
 
     /** Whether the task has been completed. */
-    protected boolean isDone;
+    private boolean isDone;
 
     /**
      * Creates an incomplete task with the given description.

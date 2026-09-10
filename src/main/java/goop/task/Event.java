@@ -5,10 +5,10 @@ package goop.task;
  */
 public class Event extends Task {
     /** Text describing when the event starts. */
-    protected String from;
+    private final String from;
 
     /** Text describing when the event ends. */
-    protected String to;
+    private final String to;
 
     /**
      * Creates an incomplete event task.

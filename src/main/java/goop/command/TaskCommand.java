@@ -1,10 +1,13 @@
 package goop.command;
 
+import java.io.IOException;
+
 import goop.exception.GoopException;
+import goop.storage.Storage;
 import goop.task.TaskList;
 
 /**
- * Provides task-number validation shared by commands that target one task.
+ * Provides validation and completion updates for commands that target one task.
  */
 public abstract class TaskCommand extends Command {
     private final int taskNumber;
@@ -38,5 +41,26 @@ public abstract class TaskCommand extends Command {
                     + tasks.size() + ".");
         }
         return taskNumber - 1;
+    }
+
+    /**
+     * Persists a completion change and restores the previous state if saving fails.
+     *
+     * @param tasks Task list containing the selected task.
+     * @param taskIndex Validated zero-based task index.
+     * @param isDone Completion state to apply.
+     * @param storage Storage used to save the updated list.
+     * @throws IOException If the changed list cannot be saved.
+     */
+    protected void setDoneAndSave(TaskList tasks, int taskIndex, boolean isDone, Storage storage)
+            throws IOException {
+        boolean wasDone = tasks.get(taskIndex).isDone();
+        tasks.setDone(taskIndex, isDone);
+        try {
+            storage.saveTasks(tasks);
+        } catch (IOException error) {
+            tasks.setDone(taskIndex, wasDone);
+            throw error;
+        }
     }
 }
