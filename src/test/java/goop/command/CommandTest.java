@@ -16,6 +16,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import goop.exception.GoopException;
 import goop.storage.Storage;
+import goop.task.Priority;
 import goop.task.TaskList;
 import goop.task.Todo;
 import goop.ui.ResponseUi;
@@ -128,6 +129,23 @@ class CommandTest {
             assertEquals("Task 2 is outside the list. Run list and choose a number from 1 to 1.",
                     error.getMessage());
             assertFalse(tasks.get(0).isDone());
+        }
+    }
+
+    @Test
+    void priorityCommand_saveFails_restoresPreviousPriorityWithoutSuccessResponse() {
+        Todo task = new Todo("task");
+        task.setPriority(Priority.HIGH);
+        TaskList tasks = new TaskList(List.of(task));
+        ResponseUi responseUi = new ResponseUi();
+
+        for (Priority priority : new Priority[] {Priority.LOW, Priority.NONE}) {
+            IOException error = assertThrows(IOException.class, () ->
+                    new PriorityCommand(1, priority).execute(tasks, responseUi, failingStorage));
+
+            assertEquals("simulated save failure", error.getMessage());
+            assertEquals(Priority.HIGH, task.getPriority());
+            assertNull(responseUi.getResponse());
         }
     }
 

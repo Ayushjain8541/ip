@@ -1,7 +1,9 @@
 package goop.task;
 
+import java.util.Objects;
+
 /**
- * Represents a task and whether it has been completed.
+ * Represents a task with its completion state and optional priority.
  */
 public class Task {
     /** Text describing the task. */
@@ -9,6 +11,9 @@ public class Task {
 
     /** Whether the task has been completed. */
     private boolean isDone;
+
+    /** Unassigned tasks have no priority marker. */
+    private Priority priority = Priority.NONE;
 
     /**
      * Creates an incomplete task with the given description.
@@ -38,6 +43,14 @@ public class Task {
         return isDone;
     }
 
+    public Priority getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Priority priority) {
+        this.priority = Objects.requireNonNull(priority);
+    }
+
     /**
      * Returns the icon used to display the task's completion status.
      *
@@ -64,10 +77,11 @@ public class Task {
     /**
      * Returns the task in the format used by the chatbot.
      *
-     * @return The status icon followed by the task description.
+     * @return The status icon, optional priority marker, and task description.
      */
     @Override
     public String toString() {
-        return "[" + getStatusIcon() + "] " + description;
+        String priorityMarker = priority == Priority.NONE ? "" : "[" + priority.getLabel() + "] ";
+        return "[" + getStatusIcon() + "] " + priorityMarker + description;
     }
 }

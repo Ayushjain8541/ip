@@ -64,3 +64,22 @@ java -jar build\libs\duke.jar
 The application stores its task data relative to the directory from which the
 JAR is run. The generated `build` directory is ignored by Git, so the JAR should
 not be committed.
+
+## Task priorities
+
+Assign a priority to an existing task using its number from `list`:
+
+```text
+priority 1 high
+priority 2 medium
+priority 3 low
+priority 1 none
+```
+
+Use `none` to clear a priority. Numeric levels `1`, `2`, and `3` are aliases
+for `high`, `medium`, and `low` (for example, `priority 2 1` marks task 2 high).
+Priority labels are case-insensitive. New tasks start without a priority.
+
+Assigned priorities appear in both `list` and `find`, for example
+`[T][ ] [high] read book`. Task order and numbering remain unchanged.
+Priorities are saved across restarts; existing data files load without migration.

@@ -3,6 +3,7 @@ package goop.ui;
 import java.util.List;
 import java.util.Scanner;
 
+import goop.task.Priority;
 import goop.task.Task;
 import goop.task.TaskList;
 
@@ -141,6 +142,18 @@ public class Ui {
     public void showAddedTask(Task task, int taskCount) {
         showResponse("Got it. I've added this task:\n  " + task
                 + "\nNow you have " + taskCount + " tasks in the list.");
+    }
+
+    /**
+     * Confirms a saved priority change or removal.
+     *
+     * @param task Updated task.
+     */
+    public void showPriorityChanged(Task task) {
+        String message = task.getPriority() == Priority.NONE
+                ? "OK, I've cleared this task's priority:"
+                : "OK, I've set this task's priority to " + task.getPriority().getLabel() + ":";
+        showResponse(message + "\n  " + task);
     }
 
     /**

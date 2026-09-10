@@ -18,6 +18,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import goop.task.Deadline;
 import goop.task.Event;
+import goop.task.Priority;
 import goop.task.Task;
 import goop.task.TaskList;
 import goop.task.Todo;
@@ -122,6 +123,33 @@ class StorageTest {
                 "D | 0 | return book | 2019-12-02T18:00:00",
                 "E | 0 | meeting | Mon \\| 2pm | Tue \\\\ 4pm"),
                 Files.readAllLines(dataFile, StandardCharsets.UTF_8));
+    }
+
+    @Test
+    void loadTasks_legacyRecords_defaultToNoPriority() throws IOException {
+        Path file = temporaryDirectory.resolve("legacy.txt");
+        Files.writeString(file, "T | 0 | priority=high\n"
+                + "D | 1 | task | 2019-12-02T18:00:00\n"
+                + "E | 0 | meeting | start | priority=low\n", StandardCharsets.UTF_8);
+
+        List<Task> tasks = new Storage(file).loadTasks();
+
+        assertEquals(3, tasks.size());
+        for (Task task : tasks) {
+            assertEquals(Priority.NONE, task.getPriority());
+        }
+        assertEquals("priority=high", tasks.get(0).getDescription());
+        assertEquals("priority=low", ((Event) tasks.get(2)).getTo());
+    }
+
+    @Test
+    void loadTasks_invalidPriority_reportsLineAndReason() throws IOException {
+        assertInvalidRecord("T | 0 | task | priority=urgent",
+                "priority must be high, medium, low, or none");
+        assertInvalidRecord("D | 0 | task | 2019-12-02T18:00:00 | priority=",
+                "priority must be high, medium, low, or none");
+        assertInvalidRecord("T | 0 | task | priority=high | extra",
+                "wrong number of fields for this task type");
     }
 
     /** Checks that an invalid second record retains its line number and diagnostic. */

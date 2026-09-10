@@ -43,7 +43,7 @@ class GoopTest {
         CommandResult result = goop.getResponse("unknown");
 
         assertEquals("ERROR: I don't recognise that command. Use todo, deadline, "
-                + "event, list, find, mark, unmark, delete, or bye.",
+                + "event, list, find, mark, unmark, delete, priority, or bye.",
                 result.getResponse());
         assertFalse(result.isExit());
     }

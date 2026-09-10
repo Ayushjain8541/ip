@@ -246,7 +246,7 @@ ____________________________________________________________
  ERROR: A todo needs a description. Use: todo <description>.
 ____________________________________________________________
 ____________________________________________________________
- ERROR: I don't recognise that command. Use todo, deadline, event, list, find, mark, unmark, delete, or bye.
+ ERROR: I don't recognise that command. Use todo, deadline, event, list, find, mark, unmark, delete, priority, or bye.
 ____________________________________________________________
 ____________________________________________________________
  ERROR: Please enter a command. For example: todo read book.
@@ -619,6 +619,137 @@ ____________________________________________________________
 ____________________________________________________________
  Here are the tasks in your list:
  1.[T][ ] read book
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+## TC-013: Assign, change, and clear task priorities
+
+- Aim: Verify that priorities appear in list and find, survive completion changes, accept numeric levels, and can be cleared.
+
+### Inputs
+
+```text
+todo read book
+priority 1 high
+mark 1
+find book
+priority 1 3
+list
+priority 1 none
+list
+bye
+```
+
+### Expected output
+
+```text
+____________________________________________________________
+  ____
+ / ___| ___   ___  _ __
+| |  _ / _ \ / _ \| '_ \
+| |_| | (_) | (_) | |_) |
+ \____|\___/ \___/| .__/
+                  |_|
+ Hello! I'm Goop.
+ What can I do for you?
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] read book
+ Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ OK, I've set this task's priority to high:
+   [T][ ] [high] read book
+____________________________________________________________
+____________________________________________________________
+ Nice! I've marked this task as done:
+   [T][X] [high] read book
+____________________________________________________________
+____________________________________________________________
+ Here are the matching tasks in your list:
+ 1.[T][X] [high] read book
+____________________________________________________________
+____________________________________________________________
+ OK, I've set this task's priority to low:
+   [T][X] [low] read book
+____________________________________________________________
+____________________________________________________________
+ Here are the tasks in your list:
+ 1.[T][X] [low] read book
+____________________________________________________________
+____________________________________________________________
+ OK, I've cleared this task's priority:
+   [T][X] read book
+____________________________________________________________
+____________________________________________________________
+ Here are the tasks in your list:
+ 1.[T][X] read book
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+## TC-014: Reject invalid priority commands
+
+- Aim: Verify exact guidance for missing arguments, invalid levels and task numbers, empty lists, and out-of-range indices.
+
+### Inputs
+
+```text
+priority
+priority 1 urgent
+priority 0 high
+priority 999999999999999999 high
+priority 1 high
+todo read book
+priority 2 high
+priority 1 high extra
+bye
+```
+
+### Expected output
+
+```text
+____________________________________________________________
+  ____
+ / ___| ___   ___  _ __
+| |  _ / _ \ / _ \| '_ \
+| |_| | (_) | (_) | |_) |
+ \____|\___/ \___/| .__/
+                  |_|
+ Hello! I'm Goop.
+ What can I do for you?
+____________________________________________________________
+____________________________________________________________
+ ERROR: Use: priority <number> <high|medium|low|none> (1=high, 2=medium, 3=low).
+____________________________________________________________
+____________________________________________________________
+ ERROR: Priority must be high, medium, low, or none (1=high, 2=medium, 3=low).
+____________________________________________________________
+____________________________________________________________
+ ERROR: The priority command accepts one positive whole number. Use: priority 1 high.
+____________________________________________________________
+____________________________________________________________
+ ERROR: That task number is too large. Run list and choose a displayed number.
+____________________________________________________________
+____________________________________________________________
+ ERROR: There are no tasks to prioritize. Add a task first.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] read book
+ Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ ERROR: Task 2 is outside the list. Run list and choose a number from 1 to 1.
+____________________________________________________________
+____________________________________________________________
+ ERROR: Use: priority <number> <high|medium|low|none> (1=high, 2=medium, 3=low).
 ____________________________________________________________
 ____________________________________________________________
  Bye. Hope to see you again soon!

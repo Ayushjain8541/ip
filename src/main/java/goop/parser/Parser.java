@@ -5,6 +5,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
 import java.util.List;
+import java.util.Locale;
 
 import goop.command.AddCommand;
 import goop.command.Command;
@@ -13,10 +14,12 @@ import goop.command.ExitCommand;
 import goop.command.FindCommand;
 import goop.command.ListCommand;
 import goop.command.MarkCommand;
+import goop.command.PriorityCommand;
 import goop.command.UnmarkCommand;
 import goop.exception.GoopException;
 import goop.task.Deadline;
 import goop.task.Event;
+import goop.task.Priority;
 import goop.task.Task;
 import goop.task.Todo;
 
@@ -65,6 +68,9 @@ public class Parser {
         if (isCommand(input, "mark")) {
             return new MarkCommand(parseTaskNumber(input, "mark"));
         }
+        if (isCommand(input, "priority")) {
+            return parsePriorityCommand(input);
+        }
         return new AddCommand(parseTask(input));
     }
 
@@ -103,6 +109,14 @@ public class Parser {
             throws GoopException {
         assert isCommand(input, commandWord) : "Task-number parsing requires the matching command";
         String argument = input.substring(commandWord.length()).trim();
+        return parsePositiveTaskNumber(argument, commandWord);
+    }
+
+    /**
+     * Validates a task-number argument independently of the surrounding command.
+     */
+    private int parsePositiveTaskNumber(String argument, String commandWord) throws GoopException {
+        String example = commandWord.equals("priority") ? "priority 1 high" : commandWord + " 1";
         if (argument.isEmpty()) {
             throw new GoopException("The " + commandWord
                     + " command needs one task number. Use: " + commandWord + " <number>.");
@@ -110,7 +124,7 @@ public class Parser {
         if (!argument.matches("[1-9][0-9]*")) {
             throw new GoopException("The " + commandWord
                     + " command accepts one positive whole number. Use: "
-                    + commandWord + " 1.");
+                    + example + ".");
         }
 
         try {
@@ -118,6 +132,39 @@ public class Parser {
         } catch (NumberFormatException error) {
             throw new GoopException(
                     "That task number is too large. Run list and choose a displayed number.");
+        }
+    }
+
+    /**
+     * Parses a priority assignment after checking its task number and level.
+     */
+    private PriorityCommand parsePriorityCommand(String input) throws GoopException {
+        String[] arguments = input.substring("priority".length()).trim().split("\\s+");
+        if (arguments.length != 2) {
+            throw new GoopException("Use: priority <number> <high|medium|low|none> "
+                    + "(1=high, 2=medium, 3=low).");
+        }
+        int taskNumber = parsePositiveTaskNumber(arguments[0], "priority");
+        Priority priority = parsePriority(arguments[1]);
+        return new PriorityCommand(taskNumber, priority);
+    }
+
+    /**
+     * Converts a priority label or numeric alias to its task value.
+     */
+    private Priority parsePriority(String text) throws GoopException {
+        switch (text.toLowerCase(Locale.ROOT)) {
+            case "high", "1":
+                return Priority.HIGH;
+            case "medium", "2":
+                return Priority.MEDIUM;
+            case "low", "3":
+                return Priority.LOW;
+            case "none":
+                return Priority.NONE;
+            default:
+                throw new GoopException("Priority must be high, medium, low, or none "
+                        + "(1=high, 2=medium, 3=low).");
         }
     }
 
@@ -143,7 +190,7 @@ public class Parser {
         }
 
         throw new GoopException("I don't recognise that command. Use todo, deadline, "
-                + "event, list, find, mark, unmark, delete, or bye.");
+                + "event, list, find, mark, unmark, delete, priority, or bye.");
     }
 
     /**

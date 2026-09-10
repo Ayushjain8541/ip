@@ -9,9 +9,11 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import goop.task.Deadline;
 import goop.task.Event;
+import goop.task.Priority;
 import goop.task.Task;
 import goop.task.TaskList;
 import goop.task.Todo;
@@ -20,6 +22,7 @@ import goop.task.Todo;
  * Loads tasks from and saves tasks to a text file on the local hard disk.
  */
 public class Storage {
+    private static final String PRIORITY_PREFIX = "priority=";
     private static final String FIELD_SEPARATOR = " | ";
     private static final String STATUS_DONE = "1";
     private static final String STATUS_NOT_DONE = "0";
@@ -99,6 +102,17 @@ public class Storage {
      * Converts one task into the line format used by the data file.
      */
     private String formatTask(Task task) throws IOException {
+        String record = formatTaskDetails(task);
+        if (task.getPriority() == Priority.NONE) {
+            return record;
+        }
+        return record + FIELD_SEPARATOR + PRIORITY_PREFIX + task.getPriority().getLabel();
+    }
+
+    /**
+     * Formats the original task fields, preserving compatibility for unprioritized tasks.
+     */
+    private String formatTaskDetails(Task task) throws IOException {
         String status = task.isDone() ? STATUS_DONE : STATUS_NOT_DONE;
         String description = escape(task.getDescription());
 
@@ -129,11 +143,48 @@ public class Storage {
 
         boolean isDone = parseStatus(fields.get(STATUS_INDEX), lineNumber);
         String description = requireText(fields.get(DESCRIPTION_INDEX), lineNumber, "description");
-        Task task = createTask(fields, description, lineNumber);
+        int fieldCount = getTaskFieldCount(fields.get(TYPE_INDEX), lineNumber);
+        Priority priority = readPriority(fields, fieldCount, lineNumber);
+        Task task = createTask(fields.subList(0, fieldCount), description, lineNumber);
+        task.setPriority(priority);
         if (isDone) {
             task.markAsDone();
         }
         return task;
+    }
+
+    /**
+     * Returns the number of fields in a task record before the optional priority.
+     */
+    private int getTaskFieldCount(String type, int lineNumber) throws IOException {
+        switch (type) {
+            case "T":
+                return TODO_FIELD_COUNT;
+            case "D":
+                return DEADLINE_FIELD_COUNT;
+            case "E":
+                return EVENT_FIELD_COUNT;
+            default:
+                throw invalidData(lineNumber, "unknown task type");
+        }
+    }
+
+    /**
+     * Reads an optional priority field while rejecting malformed or extra fields.
+     */
+    private Priority readPriority(List<String> fields, int fieldCount, int lineNumber) throws IOException {
+        if (fields.size() == fieldCount) {
+            return Priority.NONE;
+        }
+        if (fields.size() != fieldCount + 1 || !fields.get(fieldCount).startsWith(PRIORITY_PREFIX)) {
+            throw invalidData(lineNumber, "wrong number of fields for this task type");
+        }
+        String label = fields.get(fieldCount).substring(PRIORITY_PREFIX.length());
+        try {
+            return Priority.valueOf(label.toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException error) {
+            throw invalidData(lineNumber, "priority must be high, medium, low, or none");
+        }
     }
 
     /**
