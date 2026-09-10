@@ -68,15 +68,7 @@ public class Goop {
             String command = ui.readCommand();
             ui.showDivider();
 
-            try {
-                Command parsedCommand = parser.parse(command);
-                parsedCommand.execute(tasks, ui, storage);
-                isExit = parsedCommand.isExit();
-            } catch (GoopException error) {
-                ui.showError(error.getMessage());
-            } catch (IOException error) {
-                ui.showError(error.getMessage() + " No changes were made.");
-            }
+            isExit = executeCommand(command, ui);
         }
     }
 
@@ -102,17 +94,25 @@ public class Goop {
      */
     public CommandResult getResponse(String input) {
         ResponseUi responseUi = new ResponseUi();
-        boolean isExit = false;
+        boolean isExit = executeCommand(input, responseUi);
+        return new CommandResult(responseUi.getResponse(), isExit);
+    }
+
+    /**
+     * Executes a command with the same error handling for console and GUI output.
+     * Returns true only when a successfully executed command requests exit.
+     */
+    private boolean executeCommand(String input, Ui responseUi) {
         try {
-            Command parsedCommand = parser.parse(input);
-            parsedCommand.execute(tasks, responseUi, storage);
-            isExit = parsedCommand.isExit();
+            Command command = parser.parse(input);
+            command.execute(tasks, responseUi, storage);
+            return command.isExit();
         } catch (GoopException error) {
             responseUi.showError(error.getMessage());
         } catch (IOException error) {
             responseUi.showError(error.getMessage() + " No changes were made.");
         }
-        return new CommandResult(responseUi.getResponse(), isExit);
+        return false;
     }
 
     /**

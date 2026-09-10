@@ -81,4 +81,56 @@ class StorageTest {
         assertEquals("Saved task data is invalid at line 2 "
                 + "(deadline is not a valid ISO date-time).", error.getMessage());
     }
+
+    @Test
+    void loadTasks_invalidRecordShape_reportsReason() throws IOException {
+        assertInvalidRecord("T | 0", "not enough fields");
+        assertInvalidRecord("T | 0 | task | extra", "wrong number of fields for this task type");
+        assertInvalidRecord("D | 0 | task", "wrong number of fields for this task type");
+        assertInvalidRecord("E | 0 | task | start", "wrong number of fields for this task type");
+        assertInvalidRecord("X | 0 | task", "unknown task type");
+    }
+
+    @Test
+    void loadTasks_invalidStatusAndBlankFields_reportsFirstInvalidField() throws IOException {
+        assertInvalidRecord("T | 2 | task", "completion status must be 0 or 1");
+        assertInvalidRecord("X | 2 | ", "completion status must be 0 or 1");
+        assertInvalidRecord("T | 0 | ", "description cannot be blank");
+        assertInvalidRecord("D | 0 | task | ", "deadline cannot be blank");
+        assertInvalidRecord("E | 0 | task | | end", "event start cannot be blank");
+        assertInvalidRecord("E | 0 | task | start | ", "event end cannot be blank");
+    }
+
+    @Test
+    void loadTasks_invalidEscapes_reportsReason() throws IOException {
+        assertInvalidRecord("T | 0 | bad \\q", "invalid escape sequence");
+        assertInvalidRecord("T | 0 | trailing \\", "unfinished escape sequence");
+    }
+
+    @Test
+    void saveTasks_allTypes_preservesCanonicalFileFormat() throws IOException {
+        Path dataFile = temporaryDirectory.resolve("tasks.txt");
+        Todo todo = new Todo("read | book \\ notes");
+        todo.markAsDone();
+        Deadline deadline = new Deadline("return book", LocalDateTime.of(2019, 12, 2, 18, 0));
+        Event event = new Event("meeting", "Mon | 2pm", "Tue \\ 4pm");
+
+        new Storage(dataFile).saveTasks(new TaskList(List.of(todo, deadline, event)));
+
+        assertEquals(List.of(
+                "T | 1 | read \\| book \\\\ notes",
+                "D | 0 | return book | 2019-12-02T18:00:00",
+                "E | 0 | meeting | Mon \\| 2pm | Tue \\\\ 4pm"),
+                Files.readAllLines(dataFile, StandardCharsets.UTF_8));
+    }
+
+    /** Checks that an invalid second record retains its line number and diagnostic. */
+    private void assertInvalidRecord(String record, String reason) throws IOException {
+        Path dataFile = temporaryDirectory.resolve("invalid.txt");
+        Files.writeString(dataFile, "T | 0 | valid task\n" + record + "\n", StandardCharsets.UTF_8);
+
+        IOException error = assertThrows(IOException.class, () -> new Storage(dataFile).loadTasks());
+
+        assertEquals("Saved task data is invalid at line 2 (" + reason + ").", error.getMessage());
+    }
 }

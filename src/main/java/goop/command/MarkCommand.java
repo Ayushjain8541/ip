@@ -33,14 +33,7 @@ public class MarkCommand extends TaskCommand {
     public void execute(TaskList tasks, Ui ui, Storage storage)
             throws GoopException, IOException {
         int taskIndex = getTaskIndex(tasks, "mark");
-        boolean wasDone = tasks.get(taskIndex).isDone();
-        tasks.setDone(taskIndex, true);
-        try {
-            storage.saveTasks(tasks);
-        } catch (IOException error) {
-            tasks.setDone(taskIndex, wasDone);
-            throw error;
-        }
+        setDoneAndSave(tasks, taskIndex, true, storage);
         ui.showMarkedTask(tasks.get(taskIndex));
     }
 }

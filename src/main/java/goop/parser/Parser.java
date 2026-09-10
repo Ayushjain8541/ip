@@ -113,15 +113,12 @@ public class Parser {
                     + commandWord + " 1.");
         }
 
-        int taskNumber;
         try {
-            taskNumber = Integer.parseInt(argument);
+            return Integer.parseInt(argument);
         } catch (NumberFormatException error) {
             throw new GoopException(
                     "That task number is too large. Run list and choose a displayed number.");
         }
-
-        return taskNumber;
     }
 
     /**
@@ -134,12 +131,7 @@ public class Parser {
      */
     private Task parseTask(String input) throws GoopException {
         if (isCommand(input, "todo")) {
-            String description = input.substring("todo".length()).trim();
-            if (description.isEmpty()) {
-                throw new GoopException(
-                        "A todo needs a description. Use: todo <description>.");
-            }
-            return new Todo(description);
+            return parseTodo(input.substring("todo".length()).trim());
         }
 
         if (isCommand(input, "deadline")) {
@@ -152,6 +144,16 @@ public class Parser {
 
         throw new GoopException("I don't recognise that command. Use todo, deadline, "
                 + "event, list, find, mark, unmark, delete, or bye.");
+    }
+
+    /**
+     * Creates a to-do after validating its description.
+     */
+    private Todo parseTodo(String description) throws GoopException {
+        if (description.isEmpty()) {
+            throw new GoopException("A todo needs a description. Use: todo <description>.");
+        }
+        return new Todo(description);
     }
 
     /**
@@ -228,6 +230,13 @@ public class Parser {
                     + "Use: event <description> /from <start> /to <end>.");
         }
 
+        return parseEventSchedule(description, eventTimes);
+    }
+
+    /**
+     * Creates an event from its validated description and start/end arguments.
+     */
+    private Event parseEventSchedule(String description, String eventTimes) throws GoopException {
         int toPosition = findDelimiter(eventTimes, "/to");
         if (toPosition < 0) {
             throw new GoopException("An event needs '/to' before its end time. "

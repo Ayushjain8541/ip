@@ -80,11 +80,7 @@ public class Ui {
      * @param tasks Tasks to display.
      */
     public void showTaskList(TaskList tasks) {
-        StringBuilder response = new StringBuilder("Here are the tasks in your list:");
-        for (int i = 0; i < tasks.size(); i++) {
-            response.append("\n").append(i + 1).append(".").append(tasks.get(i));
-        }
-        showResponse(response.toString());
+        showNumberedTasks("Here are the tasks in your list:", tasks.getTasks());
     }
 
     /**
@@ -93,9 +89,16 @@ public class Ui {
      * @param matchingTasks Tasks whose descriptions contain the search keyword.
      */
     public void showMatchingTasks(List<Task> matchingTasks) {
-        StringBuilder response = new StringBuilder("Here are the matching tasks in your list:");
-        for (int i = 0; i < matchingTasks.size(); i++) {
-            response.append("\n").append(i + 1).append(".").append(matchingTasks.get(i));
+        showNumberedTasks("Here are the matching tasks in your list:", matchingTasks);
+    }
+
+    /**
+     * Formats an ordered task list with consecutive one-based display numbers.
+     */
+    private void showNumberedTasks(String heading, List<Task> tasks) {
+        StringBuilder response = new StringBuilder(heading);
+        for (int i = 0; i < tasks.size(); i++) {
+            response.append("\n").append(i + 1).append(".").append(tasks.get(i));
         }
         showResponse(response.toString());
     }

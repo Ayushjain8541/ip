@@ -33,14 +33,7 @@ public class UnmarkCommand extends TaskCommand {
     public void execute(TaskList tasks, Ui ui, Storage storage)
             throws GoopException, IOException {
         int taskIndex = getTaskIndex(tasks, "unmark");
-        boolean wasDone = tasks.get(taskIndex).isDone();
-        tasks.setDone(taskIndex, false);
-        try {
-            storage.saveTasks(tasks);
-        } catch (IOException error) {
-            tasks.setDone(taskIndex, wasDone);
-            throw error;
-        }
+        setDoneAndSave(tasks, taskIndex, false, storage);
         ui.showUnmarkedTask(tasks.get(taskIndex));
     }
 }

@@ -82,6 +82,24 @@ class ParserTest {
                 error.getMessage());
     }
 
+    @Test
+    void parse_eventWithSeveralMissingFields_reportsDescriptionFirst() {
+        GoopException error = assertThrows(GoopException.class, () ->
+                new Parser().parse("event /from"));
+
+        assertEquals("An event needs a description before '/from'. "
+                + "Use: event <description> /from <start> /to <end>.", error.getMessage());
+    }
+
+    @Test
+    void parse_eventWithEmptyStartAndEnd_reportsStartFirst() {
+        GoopException error = assertThrows(GoopException.class, () ->
+                new Parser().parse("event meeting /from /to"));
+
+        assertEquals("An event needs a start time after '/from'. "
+                + "Use: event <description> /from <start> /to <end>.", error.getMessage());
+    }
+
     /** Parses and executes an add command so the task produced by the parser can be inspected. */
     private Task parseAndExecute(String input) throws Exception {
         TaskList tasks = new TaskList();

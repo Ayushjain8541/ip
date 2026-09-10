@@ -21,6 +21,19 @@ import goop.task.Todo;
  */
 public class Storage {
     private static final String FIELD_SEPARATOR = " | ";
+    private static final String STATUS_DONE = "1";
+    private static final String STATUS_NOT_DONE = "0";
+
+    /** Positions and record lengths in the persisted task format. */
+    private static final int TYPE_INDEX = 0;
+    private static final int STATUS_INDEX = 1;
+    private static final int DESCRIPTION_INDEX = 2;
+    private static final int DEADLINE_INDEX = 3;
+    private static final int EVENT_START_INDEX = 3;
+    private static final int EVENT_END_INDEX = 4;
+    private static final int TODO_FIELD_COUNT = 3;
+    private static final int DEADLINE_FIELD_COUNT = 4;
+    private static final int EVENT_FIELD_COUNT = 5;
 
     private final Path filePath;
 
@@ -86,7 +99,7 @@ public class Storage {
      * Converts one task into the line format used by the data file.
      */
     private String formatTask(Task task) throws IOException {
-        String status = task.isDone() ? "1" : "0";
+        String status = task.isDone() ? STATUS_DONE : STATUS_NOT_DONE;
         String description = escape(task.getDescription());
 
         if (task instanceof Todo) {
@@ -110,46 +123,53 @@ public class Storage {
      */
     private Task parseTask(String line, int lineNumber) throws IOException {
         List<String> fields = splitFields(line, lineNumber);
-        if (fields.size() < 3) {
+        if (fields.size() < TODO_FIELD_COUNT) {
             throw invalidData(lineNumber, "not enough fields");
         }
 
-        boolean isDone;
-        if (fields.get(1).equals("1")) {
-            isDone = true;
-        } else if (fields.get(1).equals("0")) {
-            isDone = false;
-        } else {
-            throw invalidData(lineNumber, "completion status must be 0 or 1");
-        }
-
-        String description = requireText(fields.get(2), lineNumber, "description");
-        Task task;
-        switch (fields.get(0)) {
-            case "T":
-                requireFieldCount(fields, 3, lineNumber);
-                task = new Todo(description);
-                break;
-            case "D":
-                requireFieldCount(fields, 4, lineNumber);
-                task = new Deadline(description,
-                        parseDeadline(requireText(fields.get(3), lineNumber, "deadline"),
-                                lineNumber));
-                break;
-            case "E":
-                requireFieldCount(fields, 5, lineNumber);
-                task = new Event(description,
-                        requireText(fields.get(3), lineNumber, "event start"),
-                        requireText(fields.get(4), lineNumber, "event end"));
-                break;
-            default:
-                throw invalidData(lineNumber, "unknown task type");
-        }
-
+        boolean isDone = parseStatus(fields.get(STATUS_INDEX), lineNumber);
+        String description = requireText(fields.get(DESCRIPTION_INDEX), lineNumber, "description");
+        Task task = createTask(fields, description, lineNumber);
         if (isDone) {
             task.markAsDone();
         }
         return task;
+    }
+
+    /**
+     * Validates the stored completion status without accepting other numeric values.
+     */
+    private boolean parseStatus(String status, int lineNumber) throws IOException {
+        switch (status) {
+            case STATUS_DONE:
+                return true;
+            case STATUS_NOT_DONE:
+                return false;
+            default:
+                throw invalidData(lineNumber, "completion status must be 0 or 1");
+        }
+    }
+
+    /**
+     * Validates the record shape and reconstructs the appropriate task type.
+     */
+    private Task createTask(List<String> fields, String description, int lineNumber) throws IOException {
+        switch (fields.get(TYPE_INDEX)) {
+            case "T":
+                requireFieldCount(fields, TODO_FIELD_COUNT, lineNumber);
+                return new Todo(description);
+            case "D":
+                requireFieldCount(fields, DEADLINE_FIELD_COUNT, lineNumber);
+                String deadline = requireText(fields.get(DEADLINE_INDEX), lineNumber, "deadline");
+                return new Deadline(description, parseDeadline(deadline, lineNumber));
+            case "E":
+                requireFieldCount(fields, EVENT_FIELD_COUNT, lineNumber);
+                String from = requireText(fields.get(EVENT_START_INDEX), lineNumber, "event start");
+                String to = requireText(fields.get(EVENT_END_INDEX), lineNumber, "event end");
+                return new Event(description, from, to);
+            default:
+                throw invalidData(lineNumber, "unknown task type");
+        }
     }
 
     /**
@@ -169,18 +189,12 @@ public class Storage {
     private List<String> splitFields(String line, int lineNumber) throws IOException {
         List<String> fields = new ArrayList<>();
         StringBuilder field = new StringBuilder();
-        boolean isEscaped = false;
 
         for (int i = 0; i < line.length(); i++) {
             char character = line.charAt(i);
-            if (isEscaped) {
-                if (character != '\\' && character != '|') {
-                    throw invalidData(lineNumber, "invalid escape sequence");
-                }
-                field.append(character);
-                isEscaped = false;
-            } else if (character == '\\') {
-                isEscaped = true;
+            if (character == '\\') {
+                i++;
+                field.append(readEscapedCharacter(line, i, lineNumber));
             } else if (character == '|') {
                 fields.add(field.toString().trim());
                 field.setLength(0);
@@ -188,12 +202,22 @@ public class Storage {
                 field.append(character);
             }
         }
-
-        if (isEscaped) {
-            throw invalidData(lineNumber, "unfinished escape sequence");
-        }
         fields.add(field.toString().trim());
         return fields;
+    }
+
+    /**
+     * Reads the character following a backslash, rejecting incomplete or unknown escapes.
+     */
+    private char readEscapedCharacter(String line, int position, int lineNumber) throws IOException {
+        if (position == line.length()) {
+            throw invalidData(lineNumber, "unfinished escape sequence");
+        }
+        char character = line.charAt(position);
+        if (character != '\\' && character != '|') {
+            throw invalidData(lineNumber, "invalid escape sequence");
+        }
+        return character;
     }
 
     /**

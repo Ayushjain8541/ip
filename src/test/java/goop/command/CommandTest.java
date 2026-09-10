@@ -2,6 +2,7 @@ package goop.command;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -11,16 +12,22 @@ import java.nio.file.Path;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
+import goop.exception.GoopException;
 import goop.storage.Storage;
 import goop.task.TaskList;
 import goop.task.Todo;
+import goop.ui.ResponseUi;
 import goop.ui.Ui;
 
 /**
- * Tests that mutating commands restore in-memory state when persistence fails.
+ * Tests command validation, persistence, and rollback after saving fails.
  */
 class CommandTest {
+    @TempDir
+    private Path temporaryDirectory;
+
     private final Ui ui = new Ui();
     private final Storage failingStorage = new FailingStorage();
 
@@ -76,6 +83,52 @@ class CommandTest {
         assertThrows(IOException.class, () ->
                 new UnmarkCommand(2).execute(tasks, ui, failingStorage));
         assertTrue(completedTask.isDone());
+    }
+
+    @Test
+    void completionCommand_saveFails_preservesEitherInitialState() {
+        for (boolean wasDone : new boolean[] {false, true}) {
+            for (Command command : new Command[] {new MarkCommand(1), new UnmarkCommand(1)}) {
+                TaskList tasks = new TaskList(List.of(new Todo("task")));
+                tasks.setDone(0, wasDone);
+                ResponseUi responseUi = new ResponseUi();
+
+                IOException error = assertThrows(IOException.class, () ->
+                        command.execute(tasks, responseUi, failingStorage));
+
+                assertEquals("simulated save failure", error.getMessage());
+                assertEquals(wasDone, tasks.get(0).isDone());
+                assertNull(responseUi.getResponse());
+            }
+        }
+    }
+
+    @Test
+    void completionCommand_success_persistsAndReportsBothStates() throws Exception {
+        Storage storage = new Storage(temporaryDirectory.resolve("tasks.txt"));
+        TaskList tasks = new TaskList(List.of(new Todo("task")));
+        ResponseUi responseUi = new ResponseUi();
+
+        new MarkCommand(1).execute(tasks, responseUi, storage);
+        assertTrue(storage.loadTasks().get(0).isDone());
+        assertEquals("Nice! I've marked this task as done:\n  [T][X] task", responseUi.getResponse());
+
+        new UnmarkCommand(1).execute(tasks, responseUi, storage);
+        assertFalse(storage.loadTasks().get(0).isDone());
+        assertEquals("OK, I've marked this task as not done yet:\n  [T][ ] task", responseUi.getResponse());
+    }
+
+    @Test
+    void completionCommand_outOfRange_doesNotChangeOrSaveTasks() {
+        TaskList tasks = new TaskList(List.of(new Todo("task")));
+        for (Command command : new Command[] {new MarkCommand(2), new UnmarkCommand(2)}) {
+            GoopException error = assertThrows(GoopException.class, () ->
+                    command.execute(tasks, ui, failingStorage));
+
+            assertEquals("Task 2 is outside the list. Run list and choose a number from 1 to 1.",
+                    error.getMessage());
+            assertFalse(tasks.get(0).isDone());
+        }
     }
 
     /** Storage double that consistently simulates a disk-write failure. */
