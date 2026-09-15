@@ -19,7 +19,10 @@
 
 .error-label {
     -fx-background-color: #fee2e2;
-    -fx-border-color: #fecaca;
+    -fx-border-color: #b91c1c;
+    -fx-border-width: 1px 1px 1px 5px;
+    -fx-font-weight: bold;
+    -fx-padding: 12px 14px;
     -fx-text-fill: #991b1b;
 }
 
