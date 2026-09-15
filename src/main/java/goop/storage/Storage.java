@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -40,6 +41,9 @@ public class Storage {
 
     private final Path filePath;
 
+    /** Prevents replacing unreadable or invalid data with a partially loaded list. */
+    private boolean isSavingBlocked;
+
     /**
      * Creates storage that uses the given OS-independent path.
      *
@@ -56,6 +60,16 @@ public class Storage {
      * @throws IOException If the file cannot be read or contains invalid data.
      */
     public List<Task> loadTasks() throws IOException {
+        isSavingBlocked = true;
+        List<Task> tasks = readTasks();
+        isSavingBlocked = false;
+        return tasks;
+    }
+
+    /**
+     * Loads a complete valid snapshot before allowing saves.
+     */
+    private List<Task> readTasks() throws IOException {
         if (Files.notExists(filePath)) {
             return new ArrayList<>();
         }
@@ -69,7 +83,11 @@ public class Storage {
 
         List<Task> tasks = new ArrayList<>();
         for (int i = 0; i < lines.size(); i++) {
-            tasks.add(parseTask(lines.get(i), i + 1));
+            Task task = parseTask(lines.get(i), i + 1);
+            if (tasks.stream().anyMatch(existing -> existing.hasSameDetails(task))) {
+                throw invalidData(i + 1, "duplicate task details");
+            }
+            tasks.add(task);
         }
         return tasks;
     }
@@ -82,19 +100,40 @@ public class Storage {
      * @throws IOException If the folder or data file cannot be written.
      */
     public void saveTasks(TaskList tasks) throws IOException {
-        Path parentDirectory = filePath.getParent();
+        if (isSavingBlocked) {
+            throw new IOException("Saving is disabled because saved tasks could not be loaded. "
+                    + "Fix or move the data file and restart Goop.");
+        }
+        Path target = filePath.toAbsolutePath();
+        Path parentDirectory = target.getParent();
+        Path temporaryFile = null;
         try {
-            if (parentDirectory != null) {
-                Files.createDirectories(parentDirectory);
+            Files.createDirectories(parentDirectory);
+            if (Files.isSymbolicLink(target)
+                    || Files.exists(target) && (!Files.isRegularFile(target) || !Files.isWritable(target))) {
+                throw new IOException("The destination is not a writable regular file.");
             }
 
             List<String> lines = new ArrayList<>();
             for (Task task : tasks.getTasks()) {
-                lines.add(formatTask(task));
+                String line = formatTask(task);
+                parseTask(line, lines.size() + 1);
+                lines.add(line);
             }
-            Files.write(filePath, lines, StandardCharsets.UTF_8);
+            temporaryFile = Files.createTempFile(parentDirectory, ".goop-", ".tmp");
+            Files.write(temporaryFile, lines, StandardCharsets.UTF_8);
+            // No non-atomic fallback: a failed replacement must leave the previous file intact.
+            Files.move(temporaryFile, target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException error) {
             throw new IOException("I couldn't save tasks to " + filePath + ".", error);
+        } finally {
+            if (temporaryFile != null) {
+                try {
+                    Files.deleteIfExists(temporaryFile);
+                } catch (IOException error) {
+                    // A leftover temporary file must not hide the original failure or undo a successful save.
+                }
+            }
         }
     }
 
@@ -217,7 +256,11 @@ public class Storage {
                 requireFieldCount(fields, EVENT_FIELD_COUNT, lineNumber);
                 String from = requireText(fields.get(EVENT_START_INDEX), lineNumber, "event start");
                 String to = requireText(fields.get(EVENT_END_INDEX), lineNumber, "event end");
-                return new Event(description, from, to);
+                try {
+                    return new Event(description, from, to);
+                } catch (IllegalArgumentException error) {
+                    throw invalidData(lineNumber, error.getMessage());
+                }
             default:
                 throw invalidData(lineNumber, "unknown task type");
         }
@@ -295,6 +338,10 @@ public class Storage {
             throws IOException {
         if (text.isBlank()) {
             throw invalidData(lineNumber, fieldName + " cannot be blank");
+        }
+        if (text.codePoints().anyMatch(character -> Character.isISOControl(character) && character != '\t'
+                || character == 0x2028 || character == 0x2029)) {
+            throw invalidData(lineNumber, fieldName + " contains control characters");
         }
         return text;
     }

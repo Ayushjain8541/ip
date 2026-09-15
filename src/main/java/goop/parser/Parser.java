@@ -49,11 +49,14 @@ public class Parser {
      */
     public Command parse(String input) throws GoopException {
         validateCommand(input);
+        input = input.replaceAll("(?U)\\s+", " ").strip();
 
-        if (input.equals("bye")) {
+        if (isCommand(input, "bye")) {
+            requireNoArguments(input, "bye");
             return new ExitCommand();
         }
-        if (input.equals("list")) {
+        if (isCommand(input, "list")) {
+            requireNoArguments(input, "list");
             return new ListCommand();
         }
         if (isCommand(input, "find")) {
@@ -78,9 +81,24 @@ public class Parser {
      * Ensures that the user entered a command rather than a blank line.
      */
     private void validateCommand(String input) throws GoopException {
-        if (input.isEmpty()) {
+        if (input == null || input.replaceAll("(?U)\\s+", "").isEmpty()) {
             throw new GoopException(
                     "Please enter a command. For example: todo read book.");
+        }
+        if (input.codePoints().anyMatch(character ->
+                Character.isISOControl(character) && character != '\t'
+                        || character == 0x2028 || character == 0x2029)) {
+            throw new GoopException("Commands must be on one line without control characters.");
+        }
+    }
+
+    /**
+     * Rejects extra arguments on commands that do not take parameters.
+     */
+    private void requireNoArguments(String input, String commandWord) throws GoopException {
+        if (!input.equals(commandWord)) {
+            throw new GoopException("The " + commandWord + " command takes no arguments. Use: "
+                    + commandWord + ".");
         }
     }
 
@@ -224,6 +242,7 @@ public class Parser {
      * and time.
      */
     private Deadline parseDeadline(String taskDetails) throws GoopException {
+        requireSingleDelimiter(taskDetails, "/by");
         int byPosition = findDelimiter(taskDetails, "/by");
         if (byPosition < 0) {
             throw new GoopException("A deadline needs '/by' between its description "
@@ -264,9 +283,17 @@ public class Parser {
      * Creates an event after validating its description, start, and end text.
      */
     private Event parseEvent(String taskDetails) throws GoopException {
+        requireSingleDelimiter(taskDetails, "/from");
+        requireSingleDelimiter(taskDetails, "/to");
         int fromPosition = findDelimiter(taskDetails, "/from");
         if (fromPosition < 0) {
             throw new GoopException("An event needs '/from' before its start time. "
+                    + "Use: event <description> /from <start> /to <end>.");
+        }
+
+        int toPosition = findDelimiter(taskDetails, "/to");
+        if (toPosition >= 0 && toPosition < fromPosition) {
+            throw new GoopException("An event needs '/from' before '/to'. "
                     + "Use: event <description> /from <start> /to <end>.");
         }
 
@@ -300,7 +327,21 @@ public class Parser {
             throw new GoopException("An event needs an end time after '/to'. "
                     + "Use: event <description> /from <start> /to <end>.");
         }
-        return new Event(description, from, to);
+        try {
+            return new Event(description, from, to);
+        } catch (IllegalArgumentException error) {
+            throw new GoopException(error.getMessage());
+        }
+    }
+
+    /**
+     * Rejects repeated parameter tokens instead of treating them as task text.
+     */
+    private void requireSingleDelimiter(String text, String delimiter) throws GoopException {
+        int position = findDelimiter(text, delimiter);
+        if (position >= 0 && findDelimiter(text.substring(position + delimiter.length()), delimiter) >= 0) {
+            throw new GoopException("Use '" + delimiter + "' only once per command.");
+        }
     }
 
     /**

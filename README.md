@@ -83,3 +83,48 @@ Priority labels are case-insensitive. New tasks start without a priority.
 Assigned priorities appear in both `list` and `find`, for example
 `[T][ ] [high] read book`. Task order and numbering remain unchanged.
 Priorities are saved across restarts; existing data files load without migration.
+
+## Input validation and recovery
+
+- Leading/trailing whitespace, tabs, and repeated spaces are normalized to single
+  spaces, including within descriptions. Commands remain case-sensitive.
+- `list` and `bye` take no arguments. Required parameters must be present, and
+  `/by`, `/from`, and `/to` must appear only once in their respective commands.
+  Event `/from` must precede `/to`.
+- Descriptions may contain punctuation, Unicode, pipes, and backslashes. Embedded
+  line breaks and control characters are rejected to keep saved records readable.
+- Duplicate tasks are rejected even if the existing task is completed or has a
+  different priority. A duplicate has the same type, case-sensitive description
+  (ignoring repeated whitespace), and schedule. Equivalent numeric schedule
+  formats count as the same schedule. Delete the existing task to add it again.
+
+### Event dates and times
+
+For validated event schedules, use `d/M/yyyy` or `yyyy-MM-dd`, optionally followed
+by a 24-hour `HHmm` time. Both endpoints must include dates when either does.
+Time-only ranges accept formats such as `1400`, `14:00`, `2pm`, and `2:30 pm`.
+The end must be strictly later than the start. Use full dates for overnight events:
+
+```text
+event maintenance /from 2026-09-15 2300 /to 2026-09-16 0100
+```
+
+Impossible numeric dates and times are rejected. Legacy free-form schedules such
+as `Mon 2pm` are still accepted, but their chronological order cannot be reliably
+checked. Identical start/end text is rejected. Use numeric dates and times when
+you need calendar validation.
+
+### Saved-data problems
+
+A missing data file starts an empty list. Unreadable files, invalid UTF-8,
+malformed records, duplicate tasks, and invalid event schedules produce errors.
+After a load failure, saving is disabled so the original file cannot be
+overwritten by an empty list. Fix the reported record or file permissions, or
+move the file aside, then restart Goop.
+
+Saves write a temporary file beside the data file and atomically replace it only
+after writing succeeds. If writing or replacement fails, the previous file and
+in-memory task list are preserved. The destination must be a writable regular
+file (not a symbolic link), and its folder must permit creating files. Filesystems
+without atomic replacement support report a save error instead of risking the
+existing data.

@@ -35,6 +35,30 @@ public class Task {
     }
 
     /**
+     * Compares task details, ignoring completion and priority so status changes
+     * cannot make a duplicate task appear new. Text comparisons are case-sensitive.
+     *
+     * @param other Task to compare with this task.
+     * @return True when type, description, and schedule match.
+     */
+    public boolean hasSameDetails(Task other) {
+        if (other == null || getClass() != other.getClass()
+                || !description.replaceAll("(?U)\\s+", " ").strip()
+                        .equals(other.description.replaceAll("(?U)\\s+", " ").strip())) {
+            return false;
+        }
+        if (this instanceof Deadline deadline) {
+            return deadline.getBy().equals(((Deadline) other).getBy());
+        }
+        if (this instanceof Event event) {
+            Event otherEvent = (Event) other;
+            return EventSchedule.hasSameTime(event.getFrom(), otherEvent.getFrom())
+                    && EventSchedule.hasSameTime(event.getTo(), otherEvent.getTo());
+        }
+        return true;
+    }
+
+    /**
      * Checks whether this task has been completed.
      *
      * @return True when the task is complete.

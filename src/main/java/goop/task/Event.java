@@ -16,9 +16,11 @@ public class Event extends Task {
      * @param description Text describing the task.
      * @param from Date or time at which the event starts.
      * @param to Date or time at which the event ends.
+     * @throws IllegalArgumentException If the schedule is invalid or does not end after it starts.
      */
     public Event(String description, String from, String to) {
         super(description);
+        EventSchedule.validate(from, to);
         this.from = from;
         this.to = to;
     }

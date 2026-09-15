@@ -5,13 +5,17 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermission;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -150,6 +154,101 @@ class StorageTest {
                 "priority must be high, medium, low, or none");
         assertInvalidRecord("T | 0 | task | priority=high | extra",
                 "wrong number of fields for this task type");
+    }
+
+    @Test
+    void loadTasks_duplicateAndInvalidEvent_recordsAreRejected() throws IOException {
+        assertInvalidRecord("T | 1 | valid task | priority=high", "duplicate task details");
+        assertInvalidRecord("E | 0 | event | 2026-09-15 | 2026-09-14",
+                "An event must end after it starts. Use full dates and times for an overnight event.");
+        assertInvalidRecord("T | 0 | bad\u0000text", "description contains control characters");
+    }
+
+    @Test
+    void loadTasks_directoryAndInvalidEncoding_reportsReadFailure() throws IOException {
+        Path file = temporaryDirectory.resolve("invalid.txt");
+        Files.write(file, new byte[] {(byte) 0xc3, (byte) 0x28});
+        for (Path path : List.of(file, temporaryDirectory)) {
+            IOException error = assertThrows(IOException.class, () -> new Storage(path).loadTasks());
+            assertEquals("I couldn't read saved tasks from " + path + ".", error.getMessage());
+        }
+    }
+
+    @Test
+    void saveTasks_readOnlyFile_preservesContents() throws IOException {
+        assumeTrue(Files.getFileStore(temporaryDirectory).supportsFileAttributeView("posix"));
+        Path file = temporaryDirectory.resolve("readonly.txt");
+        Files.writeString(file, "T | 0 | original\n");
+        Set<PosixFilePermission> permissions = Files.getPosixFilePermissions(file);
+        try {
+            Files.setPosixFilePermissions(file, Set.of(PosixFilePermission.OWNER_READ));
+            assumeFalse(Files.isWritable(file), "A privileged process can bypass read-only permissions.");
+            assertThrows(IOException.class, () -> new Storage(file)
+                    .saveTasks(new TaskList(List.of(new Todo("replacement")))));
+            assertEquals("T | 0 | original\n", Files.readString(file));
+        } finally {
+            Files.setPosixFilePermissions(file, permissions);
+        }
+    }
+
+    @Test
+    void loadTasks_accessDenied_blocksSavingAndPreservesFile() throws IOException {
+        assumeTrue(Files.getFileStore(temporaryDirectory).supportsFileAttributeView("posix"));
+        Path file = temporaryDirectory.resolve("denied.txt");
+        Files.writeString(file, "T | 0 | original\n");
+        Set<PosixFilePermission> permissions = Files.getPosixFilePermissions(file);
+        Storage storage = new Storage(file);
+        try {
+            Files.setPosixFilePermissions(file, Set.of(PosixFilePermission.OWNER_WRITE));
+            assumeFalse(Files.isReadable(file), "A privileged process can bypass read permissions.");
+            assertThrows(IOException.class, storage::loadTasks);
+            IOException error = assertThrows(IOException.class, () -> storage.saveTasks(new TaskList()));
+            assertTrue(error.getMessage().startsWith("Saving is disabled"));
+        } finally {
+            Files.setPosixFilePermissions(file, permissions);
+        }
+        assertEquals("T | 0 | original\n", Files.readString(file));
+    }
+
+    @Test
+    void saveTasks_readOnlyDirectory_preservesExistingFile() throws IOException {
+        assumeTrue(Files.getFileStore(temporaryDirectory).supportsFileAttributeView("posix"));
+        Path file = temporaryDirectory.resolve("tasks.txt");
+        Files.writeString(file, "T | 0 | original\n");
+        Set<PosixFilePermission> permissions = Files.getPosixFilePermissions(temporaryDirectory);
+        try {
+            Files.setPosixFilePermissions(temporaryDirectory,
+                    Set.of(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_EXECUTE));
+            assumeFalse(Files.isWritable(temporaryDirectory), "A privileged process can bypass permissions.");
+            assertThrows(IOException.class, () -> new Storage(file)
+                    .saveTasks(new TaskList(List.of(new Todo("replacement")))));
+            assertEquals("T | 0 | original\n", Files.readString(file));
+        } finally {
+            Files.setPosixFilePermissions(temporaryDirectory, permissions);
+        }
+    }
+
+    @Test
+    void saveTasks_invalidTask_preservesPreviousFile() throws IOException {
+        Path file = temporaryDirectory.resolve("tasks.txt");
+        Storage storage = new Storage(file);
+        storage.saveTasks(new TaskList(List.of(new Todo("original"))));
+
+        assertThrows(IOException.class, () -> storage.saveTasks(new TaskList(List.of(new Todo("bad\nrecord")))));
+        assertEquals("T | 0 | original\n", Files.readString(file));
+        try (var files = Files.list(temporaryDirectory)) {
+            assertEquals(List.of(file), files.toList());
+        }
+    }
+
+    @Test
+    void saveTasks_parentIsFile_reportsSaveFailure() throws IOException {
+        Path parent = temporaryDirectory.resolve("parent");
+        Files.writeString(parent, "keep this");
+        Storage storage = new Storage(parent.resolve("tasks.txt"));
+
+        assertThrows(IOException.class, () -> storage.saveTasks(new TaskList(List.of(new Todo("task")))));
+        assertEquals("keep this", Files.readString(parent));
     }
 
     /** Checks that an invalid second record retains its line number and diagnostic. */

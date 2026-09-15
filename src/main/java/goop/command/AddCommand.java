@@ -2,6 +2,7 @@ package goop.command;
 
 import java.io.IOException;
 
+import goop.exception.GoopException;
 import goop.storage.Storage;
 import goop.task.Task;
 import goop.task.TaskList;
@@ -29,9 +30,13 @@ public class AddCommand extends Command {
      * @param ui User interface used to display the added task.
      * @param storage Storage used to persist the updated task list.
      * @throws IOException If the updated task list cannot be saved.
+     * @throws GoopException If a task with the same details already exists.
      */
     @Override
-    public void execute(TaskList tasks, Ui ui, Storage storage) throws IOException {
+    public void execute(TaskList tasks, Ui ui, Storage storage) throws IOException, GoopException {
+        if (tasks.getTasks().stream().anyMatch(existing -> existing.hasSameDetails(task))) {
+            throw new GoopException("This task already exists. Use list to find it.");
+        }
         tasks.add(task);
         try {
             storage.saveTasks(tasks);

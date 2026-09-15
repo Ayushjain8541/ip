@@ -755,3 +755,217 @@ ____________________________________________________________
  Bye. Hope to see you again soon!
 ____________________________________________________________
 ```
+
+## TC-015: Normalize spacing and reject extra arguments
+
+- Aim: Verify that leading/trailing spaces, repeated spaces, and tabs are accepted, while list and bye reject extra arguments without exiting.
+
+### Inputs
+
+```text
+  todo	read   book  
+list extra
+bye now
+  list  
+bye
+```
+
+### Expected output
+
+```text
+____________________________________________________________
+  ____
+ / ___| ___   ___  _ __
+| |  _ / _ \ / _ \| '_ \
+| |_| | (_) | (_) | |_) |
+ \____|\___/ \___/| .__/
+                  |_|
+ Hello! I'm Goop.
+ What can I do for you?
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] read book
+ Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ ERROR: The list command takes no arguments. Use: list.
+____________________________________________________________
+____________________________________________________________
+ ERROR: The bye command takes no arguments. Use: bye.
+____________________________________________________________
+____________________________________________________________
+ Here are the tasks in your list:
+ 1.[T][ ] read book
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+## TC-016: Reject repeated and reordered parameters
+
+- Aim: Verify exact guidance for repeated delimiters and reversed event parameters, with no tasks added.
+
+### Inputs
+
+```text
+deadline task /by 1/1/2026 1200 /by 2/1/2026 1200
+event task /from Mon /from Tue /to Wed
+event task /from Mon /to Tue /to Wed
+event task /to Tue /from Mon
+list
+bye
+```
+
+### Expected output
+
+```text
+____________________________________________________________
+  ____
+ / ___| ___   ___  _ __
+| |  _ / _ \ / _ \| '_ \
+| |_| | (_) | (_) | |_) |
+ \____|\___/ \___/| .__/
+                  |_|
+ Hello! I'm Goop.
+ What can I do for you?
+____________________________________________________________
+____________________________________________________________
+ ERROR: Use '/by' only once per command.
+____________________________________________________________
+____________________________________________________________
+ ERROR: Use '/from' only once per command.
+____________________________________________________________
+____________________________________________________________
+ ERROR: Use '/to' only once per command.
+____________________________________________________________
+____________________________________________________________
+ ERROR: An event needs '/from' before '/to'. Use: event <description> /from <start> /to <end>.
+____________________________________________________________
+____________________________________________________________
+ Here are the tasks in your list:
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+## TC-017: Validate event dates and ordering
+
+- Aim: Verify impossible dates, invalid times, equal/reversed endpoints, and incomplete dated ranges; accept a valid overnight event.
+
+### Inputs
+
+```text
+event task /from 30/2/2026 1200 /to 1/3/2026 1300
+event task /from 25:00 /to 26:00
+event task /from 4pm /to 2pm
+event task /from 1400 /to 14:00
+event task /from 2026-09-15 /to 4pm
+event task /from 2026-09-15 2300 /to 2026-09-16 0100
+bye
+```
+
+### Expected output
+
+```text
+____________________________________________________________
+  ____
+ / ___| ___   ___  _ __
+| |  _ / _ \ / _ \| '_ \
+| |_| | (_) | (_) | |_) |
+ \____|\___/ \___/| .__/
+                  |_|
+ Hello! I'm Goop.
+ What can I do for you?
+____________________________________________________________
+____________________________________________________________
+ ERROR: Invalid event date or time. Use d/M/yyyy or yyyy-MM-dd with optional HHmm, or a time such as 14:00 or 2pm.
+____________________________________________________________
+____________________________________________________________
+ ERROR: Invalid event date or time. Use d/M/yyyy or yyyy-MM-dd with optional HHmm, or a time such as 14:00 or 2pm.
+____________________________________________________________
+____________________________________________________________
+ ERROR: An event must end after it starts. Use full dates and times for an overnight event.
+____________________________________________________________
+____________________________________________________________
+ ERROR: An event must end after it starts. Use full dates and times for an overnight event.
+____________________________________________________________
+____________________________________________________________
+ ERROR: Use full dates for both event endpoints.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [E][ ] task (from: 2026-09-15 2300 to: 2026-09-16 0100)
+ Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
+
+## TC-018: Reject duplicate tasks after status changes
+
+- Aim: Verify duplicate detection ignores completion and priority, keeps the existing task intact, and allows adding it again after deletion.
+
+### Inputs
+
+```text
+todo read book
+mark 1
+priority 1 high
+todo read   book
+list
+delete 1
+todo read book
+bye
+```
+
+### Expected output
+
+```text
+____________________________________________________________
+  ____
+ / ___| ___   ___  _ __
+| |  _ / _ \ / _ \| '_ \
+| |_| | (_) | (_) | |_) |
+ \____|\___/ \___/| .__/
+                  |_|
+ Hello! I'm Goop.
+ What can I do for you?
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] read book
+ Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Nice! I've marked this task as done:
+   [T][X] read book
+____________________________________________________________
+____________________________________________________________
+ OK, I've set this task's priority to high:
+   [T][X] [high] read book
+____________________________________________________________
+____________________________________________________________
+ ERROR: This task already exists. Use list to find it.
+____________________________________________________________
+____________________________________________________________
+ Here are the tasks in your list:
+ 1.[T][X] [high] read book
+____________________________________________________________
+____________________________________________________________
+ Noted. I've removed this task:
+   [T][X] [high] read book
+ Now you have 0 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Got it. I've added this task:
+   [T][ ] read book
+ Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+ Bye. Hope to see you again soon!
+____________________________________________________________
+```
