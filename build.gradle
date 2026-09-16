@@ -25,6 +25,12 @@ javafx {
     modules = ['javafx.controls', 'javafx.fxml']
 }
 
+configurations {
+    // Keep additional platforms separate from the host-specific JavaFX runtime.
+    windowsJavafx
+    linuxJavafx
+}
+
 dependencies {
     String jUnitVersion = '5.14.4'
 
@@ -32,6 +38,13 @@ dependencies {
 
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${jUnitVersion}"
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.14.4'
+
+    // Include platform-specific classes and native libraries for distribution.
+    [windowsJavafx: 'win', linuxJavafx: 'linux'].each { configuration, platform ->
+        ['base', 'graphics', 'controls', 'fxml'].each { module ->
+            add(configuration, "org.openjfx:javafx-${module}:${javafx.version}:${platform}@jar")
+        }
+    }
 }
 
 test {
@@ -71,10 +84,14 @@ jar {
 
 shadowJar {
     archiveFileName = 'duke.jar'
+    configurations = [project.configurations.runtimeClasspath,
+                      project.configurations.windowsJavafx, project.configurations.linuxJavafx]
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
     // Make the fat JAR directly executable with `java -jar`.
     manifest {
-        attributes 'Main-Class': application.mainClass.get()
+        attributes 'Main-Class': application.mainClass.get(),
+                'Enable-Native-Access': 'ALL-UNNAMED'
     }
 }
 
